@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocVault — Kho Tài Liệu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- ═══════════════════════════════════════
+       SIDEBAR
+  ═══════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">📚</div>
+        <div class="logo-text">Doc<span>Vault</span></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Điều hướng</div>
+      <div class="nav-item active" onclick="showPage('home')" id="nav-home">
+        <span class="nav-icon">🏠</span> Tổng quan
+        <span class="nav-badge" id="badge-home">—</span>
+      </div>
+      <div class="nav-item" onclick="showPage('docs')" id="nav-docs">
+        <span class="nav-icon">📄</span> Tài liệu
+        <span class="nav-badge" id="badge-docs">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('favorites')" id="nav-favorites">
+        <span class="nav-icon">⭐</span> Yêu thích
+        <span class="nav-badge" id="badge-favorites">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('recent')" id="nav-recent">
+        <span class="nav-icon">🕐</span> Gần đây
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Danh mục</div>
+      <div class="nav-item" onclick="filterByType('guide')" id="nav-guide">
+        <span class="nav-icon">📖</span> Hướng dẫn
+        <span class="nav-badge" id="badge-guide">0</span>
+      </div>
+      <div class="nav-item" onclick="filterByType('api')" id="nav-api">
+        <span class="nav-icon">⚡</span> API Reference
+        <span class="nav-badge" id="badge-api">0</span>
+      </div>
+      <div class="nav-item" onclick="filterByType('tutorial')" id="nav-tutorial">
+        <span class="nav-icon">🎯</span> Tutorial
+        <span class="nav-badge" id="badge-tutorial">0</span>
+      </div>
+      <div class="nav-item" onclick="filterByType('release')" id="nav-release">
+        <span class="nav-icon">🚀</span> Release Notes
+        <span class="nav-badge" id="badge-release">0</span>
+      </div>
+      <div class="nav-item" onclick="filterByType('design')" id="nav-design">
+        <span class="nav-icon">🎨</span> Design
+        <span class="nav-badge" id="badge-design">0</span>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Quản lý</div>
+      <div class="nav-item" onclick="showPage('settings')" id="nav-settings">
+        <span class="nav-icon">⚙️</span> Cài đặt
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="admin-badge" onclick="showPage('settings')">
+        <div class="admin-avatar">👤</div>
+        <div class="admin-info">
+          <div class="admin-name" id="adminName">Admin</div>
+          <div class="admin-role">Quản trị viên</div>
+        </div>
+        <div class="pulse-dot"></div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ═══════════════════════════════════════
+       MAIN CONTENT
+  ═══════════════════════════════════════ -->
+  <main class="main" id="main">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="hamburger" onclick="toggleSidebar()">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm tài liệu..." oninput="handleSearch(this.value)">
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-ghost hide-mobile" onclick="showPage('docs')">
+          <span>📄</span> Tất cả
+        </button>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <span>+</span> Thêm tài liệu
+        </button>
+      </div>
+    </header>
+
+    <!-- ── PAGE: HOME ──────────────────────────── -->
+    <div id="page-home" class="content">
+      <div class="page-header">
+        <div class="page-title">Xin chào, Admin 👋</div>
+        <div class="page-subtitle">Quản lý và khám phá kho tài liệu của bạn</div>
+      </div>
+
+      <div class="featured-card shimmer" id="featuredCard">
+        <div class="featured-tag">⭐ Nổi bật</div>
+        <div class="featured-title" id="featuredTitle">Chào mừng đến DocVault</div>
+        <div class="featured-desc" id="featuredDesc">
+          Nền tảng quản lý tài liệu hiện đại. Lưu trữ, tìm kiếm và chia sẻ tài liệu của bạn một cách dễ dàng.
+        </div>
+        <div class="featured-actions">
+          <button class="btn btn-primary" onclick="openAddModal()">+ Thêm tài liệu</button>
+          <button class="btn btn-ghost" onclick="showPage('docs')">Xem tất cả</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-value" id="statTotal">0</div>
+          <div class="stat-label">Tổng tài liệu</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value" id="statFav">0</div>
+          <div class="stat-label">Yêu thích</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🗂️</div>
+          <div class="stat-value" id="statCats">5</div>
+          <div class="stat-label">Danh mục</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📅</div>
+          <div class="stat-value" id="statRecent">0</div>
+          <div class="stat-label">Tháng này</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <div class="section-title">Tài liệu gần đây</div>
+        <button class="btn btn-ghost" onclick="showPage('docs')" style="font-size:12px;padding:6px 12px;">Xem tất cả →</button>
+      </div>
+      <div class="docs-grid" id="homeDocsGrid">
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">📭</div>
+          <div class="empty-title">Chưa có tài liệu</div>
+          <div class="empty-desc">Bấm "Thêm tài liệu" để bắt đầu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: ALL DOCS ──────────────────────── -->
+    <div id="page-docs" style="display:none" class="content">
+      <div class="page-header">
+        <div class="page-title">Tất cả tài liệu</div>
+        <div class="page-subtitle" id="docsSubtitle">Quản lý kho tài liệu của bạn</div>
+      </div>
+      <div class="section-header">
+        <div class="section-title" id="docsSectionTitle">Tất cả</div>
+        <div class="filter-tabs">
+          <div class="filter-tab active" onclick="setFilter('all', this)">Tất cả</div>
+          <div class="filter-tab" onclick="setFilter('guide', this)">Hướng dẫn</div>
+          <div class="filter-tab" onclick="setFilter('api', this)">API</div>
+          <div class="filter-tab" onclick="setFilter('tutorial', this)">Tutorial</div>
+          <div class="filter-tab" onclick="setFilter('release', this)">Release</div>
+          <div class="filter-tab" onclick="setFilter('design', this)">Design</div>
+        </div>
+      </div>
+      <div class="docs-grid" id="allDocsGrid"></div>
+    </div>
+
+    <!-- ── PAGE: FAVORITES ────────────────────── -->
+    <div id="page-favorites" style="display:none" class="content">
+      <div class="page-header">
+        <div class="page-title">Yêu thích ⭐</div>
+        <div class="page-subtitle">Tài liệu bạn đã đánh dấu</div>
+      </div>
+      <div class="docs-grid" id="favDocsGrid"></div>
+    </div>
+
+    <!-- ── PAGE: RECENT ───────────────────────── -->
+    <div id="page-recent" style="display:none" class="content">
+      <div class="page-header">
+        <div class="page-title">Gần đây 🕐</div>
+        <div class="page-subtitle">Tài liệu được xem hoặc thêm gần đây nhất</div>
+      </div>
+      <div class="docs-grid" id="recentDocsGrid"></div>
+    </div>
+
+    <!-- ── PAGE: DOC VIEW ─────────────────────── -->
+    <div id="page-view" class="doc-view">
+      <div style="margin-bottom:20px">
+        <button class="btn btn-ghost" onclick="goBack()" style="font-size:13px;padding:7px 14px">← Quay lại</button>
+      </div>
+      <div class="doc-view-header">
+        <div class="doc-view-icon" id="viewIcon"></div>
+        <div class="doc-view-meta">
+          <div id="viewBadge"></div>
+          <div class="doc-view-title" id="viewTitle"></div>
+          <div class="doc-view-info">
+            <span class="doc-type-badge" id="viewType"></span>
+            <span id="viewDate" style="font-size:12px;color:var(--text-muted)"></span>
+            <span id="viewAuthor" style="font-size:12px;color:var(--text-muted)"></span>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0;align-items:flex-start">
+          <button class="btn btn-ghost" id="viewFavBtn" onclick="toggleFavFromView()">⭐ Yêu thích</button>
+          <button class="btn btn-ghost" onclick="editCurrentDoc()">✏️ Sửa</button>
+          <button class="btn btn-ghost" style="color:#ff6b6b" onclick="deleteCurrentDoc()">🗑️</button>
+        </div>
+      </div>
+      <div class="doc-view-body" id="viewBody"></div>
+    </div>
+
+    <!-- ── PAGE: SETTINGS ─────────────────────── -->
+    <div id="page-settings" style="display:none" class="content">
+      <div class="page-header">
+        <div class="page-title">Cài đặt ⚙️</div>
+        <div class="page-subtitle">Tuỳ chỉnh trải nghiệm của bạn</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">👤 Hồ sơ Admin</div>
+        <div class="form-group">
+          <label class="form-label">Tên hiển thị</label>
+          <input type="text" class="form-input" id="settingAdminName" placeholder="Tên Admin" value="Admin">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả kho tài liệu</label>
+          <input type="text" class="form-input" id="settingSiteDesc" placeholder="Mô tả..." value="Kho tài liệu nội bộ">
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn btn-primary" onclick="saveProfile()">Lưu hồ sơ</button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 Tuỳ chỉnh màu chủ đề</div>
+        <div class="form-group">
+          <label class="form-label">Màu accent</label>
+          <div class="color-swatches">
+            <div class="color-swatch active" style="background:#7c6fff" onclick="setAccent('#7c6fff','#9c8fff',this)" title="Tím"></div>
+            <div class="color-swatch" style="background:#ff6fb0" onclick="setAccent('#ff6fb0','#ff8fc0',this)" title="Hồng"></div>
+            <div class="color-swatch" style="background:#6fffc8" onclick="setAccent('#6fffc8','#8fffd8',this)" title="Xanh lá"></div>
+            <div class="color-swatch" style="background:#6fc8ff" onclick="setAccent('#6fc8ff','#8fd8ff',this)" title="Xanh dương"></div>
+            <div class="color-swatch" style="background:#ffb86f" onclick="setAccent('#ffb86f','#ffc88f',this)" title="Cam"></div>
+            <div class="color-swatch" style="background:#ff6f6f" onclick="setAccent('#ff6f6f','#ff8f8f',this)" title="Đỏ"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">⚙️ Tuỳ chọn hiển thị</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Hiệu ứng shimmer</div>
+            <div class="setting-desc">Hiệu ứng sáng chạy trên thẻ nổi bật</div>
+          </div>
+          <button class="toggle on" id="toggleShimmer" onclick="toggleSetting('shimmer', this)"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Animation khi tải</div>
+            <div class="setting-desc">Thẻ tài liệu trượt lên khi xuất hiện</div>
+          </div>
+          <button class="toggle on" id="toggleAnim" onclick="toggleSetting('animation', this)"></button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Hiệu ứng hover</div>
+            <div class="setting-desc">Thẻ nổi lên khi di chuột</div>
+          </div>
+          <button class="toggle on" id="toggleHover" onclick="toggleSetting('hover', this)"></button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">🗂️ Quản lý dữ liệu</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Xuất dữ liệu</div>
+            <div class="setting-desc">Tải về toàn bộ tài liệu dạng JSON</div>
+          </div>
+          <button class="btn btn-ghost" onclick="exportData()">Xuất JSON</button>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name">Nhập dữ liệu</div>
+            <div class="setting-desc">Khôi phục từ file JSON đã xuất</div>
+          </div>
+          <label class="btn btn-ghost" style="cursor:pointer">
+            Nhập JSON
+            <input type="file" accept=".json" onchange="importData(event)" style="display:none">
+          </label>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-name" style="color:#ff6b6b">Xoá tất cả dữ liệu</div>
+            <div class="setting-desc">Không thể hoàn tác!</div>
+          </div>
+          <button class="btn btn-ghost" style="color:#ff6b6b;border-color:rgba(255,107,107,0.3)" onclick="clearAll()">Xoá tất cả</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══════════════════════════════════════
+       MODAL: ADD / EDIT DOCUMENT
+  ═══════════════════════════════════════ -->
+  <div class="modal-overlay" id="docModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modalTitle">📝 Thêm tài liệu</div>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editId">
+        <div class="form-group">
+          <label class="form-label">Tiêu đề *</label>
+          <input type="text" class="form-input" id="docTitle" placeholder="Tên tài liệu...">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Loại tài liệu</label>
+            <select class="form-select" id="docType">
+              <option value="guide">📖 Hướng dẫn</option>
+              <option value="api">⚡ API Reference</option>
+              <option value="tutorial">🎯 Tutorial</option>
+              <option value="release">🚀 Release Notes</option>
+              <option value="design">🎨 Design</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tác giả</label>
+            <input type="text" class="form-input" id="docAuthor" placeholder="Tên tác giả...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả ngắn</label>
+          <input type="text" class="form-input" id="docDesc" placeholder="Mô tả tóm tắt...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nội dung (hỗ trợ Markdown)</label>
+          <textarea class="form-textarea" id="docContent"
+            placeholder="## Tiêu đề&#10;&#10;Nội dung tài liệu...&#10;### Phần nhỏ&#10;- Điểm 1&#10;- Điểm 2&#10;`code inline`"
+            style="min-height:160px"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tags (cách nhau bằng dấu phẩy)</label>
+          <input type="text" class="form-input" id="docTags" placeholder="vd: react, javascript, ui">
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-ghost" onclick="closeModal()">Huỷ</button>
+          <button class="btn btn-primary" onclick="saveDoc()">💾 Lưu tài liệu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
