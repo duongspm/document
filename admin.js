@@ -3,7 +3,9 @@
 // ============================================================
 import { addDocument, updateDocument, deleteDocument,
          getDocument, listenDocuments }
-  from "shared/firebase.js";
+  // from "../shared/firebase.js";
+  from "connection.js";
+
 
 // ── State ────────────────────────────────────────────────────
 let allDocs        = [];

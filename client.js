@@ -2,7 +2,9 @@
 //  client.js  —  Public client page
 // ============================================================
 import { listenDocuments, getDocument }
-  from "../shared/firebase.js";
+  // from "../shared/firebase.js";
+  from "connection.js";
+
 
 // ── State ────────────────────────────────────────────────────
 let allDocs    = [];
