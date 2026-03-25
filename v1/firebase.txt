@@ -1,0 +1,8 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyCnPc_SS_dR0dXl7WPY1FNp_YgKoUyBl-E",
+  authDomain: "my-creative-blog.firebaseapp.com",
+  projectId: "my-creative-blog",
+  storageBucket: "my-creative-blog.firebasestorage.app",
+  messagingSenderId: "57335816842",
+  appId: "1:57335816842:web:9212c8576d23e534c00373",
+};
