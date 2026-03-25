@@ -3,7 +3,7 @@
 // ============================================================
 import { addDocument, updateDocument, deleteDocument,
          getDocument, listenDocuments }
-  from "../shared/firebase.js";
+  from "shared/firebase.js";
 
 // ── State ────────────────────────────────────────────────────
 let allDocs        = [];
