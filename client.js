@@ -3,7 +3,7 @@
 // ============================================================
 import { listenDocuments, getDocument }
   // from "../shared/firebase.js";
-  from "connection.js";
+  from "./connection.js";
 
 
 // ── State ────────────────────────────────────────────────────
