@@ -1,0 +1,327 @@
+<!-- ============================================================
+  CHỨC NĂNG 6: LẬP LỊCH CHẾ ĐỘ TỐI TỰ ĐỘNG
+  CHỨC NĂNG 7: BÀI VIẾT LIÊN QUAN
+  ============================================================
+  📁 HƯỚNG DẪN THÊM VÀO:
+
+  Cả 2 chức năng này chỉ cần thêm vào CLIENT:
+  → client/client.css   thêm CSS vào CUỐI FILE
+  → client/client.js    thêm JS vào CUỐI FILE
+  → client/client.html  thêm 1 div nhỏ (xem bên dưới)
+  ============================================================ -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+  CHỨC NĂNG 6: AUTO DARK MODE
+  ══════════════════════════════════════════════════════════
+
+  PHẦN A1 — client/client.html
+  Tìm thẻ <body>, thêm thuộc tính: data-theme="dark"
+  Tức là: <body data-theme="dark">
+
+  PHẦN A2 — Thêm nút toggle theme vào header
+  Tìm: <button class="hamburger-client" id="mobileMenuBtn">☰</button>
+  Thêm TRƯỚC dòng đó:
+══════════════════════════════════════════════════════════ -->
+
+<button class="theme-toggle-btn" id="themeToggleBtn" onclick="manualToggleTheme()" title="Chuyển theme">
+  <span id="themeIcon">🌙</span>
+</button>
+
+<!-- Toast thông báo auto theme (thêm vào sau <body>) -->
+<div id="themeToastFixed" class="theme-toast-fixed" style="display:none">
+  <span id="themeToastMsg"></span>
+  <button onclick="document.getElementById('themeToastFixed').style.display='none'">✕</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN B6 — CSS  →  Thêm vào CUỐI client/client.css
+══════════════════════════════════════════════════════════ -->
+<style id="darkmode-css">
+/* ── Light mode variables ── */
+body[data-theme="light"] {
+  --bg:    #f4f4fc;
+  --s1:    #ffffff;
+  --s2:    #f0f0f8;
+  --s3:    #e4e4f0;
+  --s4:    #d8d8ec;
+  --bdr:   rgba(0,0,0,0.08);
+  --bdrh:  rgba(0,0,0,0.15);
+  --text:  #12121e;
+  --muted: #5c5c80;
+  --dim:   #9090b4;
+  --acc:   #6c5ce7;
+  --acc2:  #fd79a8;
+  --acc3:  #00b894;
+  --acc4:  #e17055;
+}
+
+body[data-theme="light"] .site-header {
+  background: rgba(244,244,252,.9);
+}
+body[data-theme="light"] .tag-bar {
+  background: rgba(244,244,252,.95);
+}
+body[data-theme="light"] .detail-panel {
+  background: #fff;
+}
+body[data-theme="light"] .hero {
+  background: linear-gradient(135deg, #f8f8ff, #f0f0ff);
+}
+
+/* ── Theme toggle button ── */
+.theme-toggle-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--s2); border: 1px solid var(--bdr);
+  cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s; flex-shrink: 0;
+}
+.theme-toggle-btn:hover { background: var(--s3); transform: rotate(15deg); }
+
+/* ── Theme toast notification ── */
+.theme-toast-fixed {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--s2); border: 1px solid var(--bdr);
+  border-radius: 20px; padding: 10px 18px;
+  font-size: 13px; color: var(--text);
+  box-shadow: 0 8px 24px rgba(0,0,0,.3);
+  z-index: 700; display: flex; align-items: center; gap: 10px;
+  animation: popUp .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popUp { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.theme-toast-fixed button {
+  background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px;
+}
+
+/* ── Smooth theme transition ── */
+body, body * { transition: background-color .3s ease, border-color .3s ease, color .2s ease; }
+/* Tắt transition cho animation quan trọng */
+.hero-orb, .detail-panel, .loader { transition: none !important; }
+</style>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN C6 — JS  →  Thêm vào CUỐI client/client.js
+══════════════════════════════════════════════════════════ -->
+<script id="darkmode-js">
+// ════════════════════════════════════════════
+//  AUTO DARK MODE SCHEDULER (thêm vào cuối client.js)
+// ════════════════════════════════════════════
+
+const DARK_START  = 18;  // 18:00 (6 chiều)
+const DARK_END    = 7;   // 07:00 (7 sáng)
+let   _themeAuto  = true;  // true = chế độ tự động
+let   _lastAutoTheme = null;
+
+function initTheme() {
+  const saved = localStorage.getItem("dv_theme");
+  if (saved) {
+    setTheme(saved, false);
+    _themeAuto = false;
+  } else {
+    applyAutoTheme(false);
+  }
+  // Kiểm tra mỗi phút
+  setInterval(checkAutoTheme, 60 * 1000);
+}
+
+function getScheduledTheme() {
+  const h = new Date().getHours();
+  // Tối: 18:00 - 23:59 hoặc 00:00 - 07:00
+  return (h >= DARK_START || h < DARK_END) ? "dark" : "light";
+}
+
+function applyAutoTheme(notify = true) {
+  const theme = getScheduledTheme();
+  setTheme(theme, false);
+  if (notify && _lastAutoTheme !== null && _lastAutoTheme !== theme) {
+    const msgs = {
+      dark:  `🌙 Đã chuyển sang chế độ tối vào lúc hoàng hôn`,
+      light: `☀️ Đã chuyển sang chế độ sáng vào lúc bình minh`,
+    };
+    showThemeNotification(msgs[theme]);
+  }
+  _lastAutoTheme = theme;
+}
+
+function checkAutoTheme() {
+  if (!_themeAuto) return;
+  applyAutoTheme(true);
+}
+
+function setTheme(theme, saveLocal = true) {
+  document.body.setAttribute("data-theme", theme);
+  const icon = document.getElementById("themeIcon");
+  if (icon) icon.textContent = theme === "dark" ? "🌙" : "☀️";
+  if (saveLocal) localStorage.setItem("dv_theme", theme);
+}
+
+function manualToggleTheme() {
+  const current = document.body.getAttribute("data-theme") || "dark";
+  const next    = current === "dark" ? "light" : "dark";
+  setTheme(next, true);
+  _themeAuto = false;  // Tắt auto khi user chỉnh tay
+  showToast(`${next === "dark" ? "🌙" : "☀️"} Đã chuyển sang chế độ ${next === "dark" ? "tối" : "sáng"}`, "info");
+}
+window.manualToggleTheme = manualToggleTheme;
+
+function showThemeNotification(msg) {
+  const el = document.getElementById("themeToastFixed");
+  const msgEl = document.getElementById("themeToastMsg");
+  if (!el || !msgEl) return;
+  msgEl.textContent = msg;
+  el.style.display = "flex";
+  setTimeout(() => el.style.display = "none", 5000);
+}
+
+// Khởi động — gọi trong DOMContentLoaded:
+// initTheme();
+// (Tìm dòng document.addEventListener("DOMContentLoaded", () => { ... })
+//  Thêm initTheme(); vào trong đó)
+</script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  CHỨC NĂNG 7: BÀI VIẾT LIÊN QUAN
+  ══════════════════════════════════════════════════════════
+
+  PHẦN B7 — CSS  →  Thêm vào CUỐI client/client.css
+══════════════════════════════════════════════════════════ -->
+<style id="related-css">
+/* ── Related Posts ── */
+.related-section {
+  padding: 28px 32px 32px;
+  border-top: 1px solid var(--bdr);
+}
+.related-title {
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+  margin-bottom: 16px; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.related-title::before { content: '◈'; color: var(--acc); font-size: 12px; }
+
+.related-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.related-card {
+  background: var(--s2); border: 1px solid var(--bdr);
+  border-radius: 12px; padding: 14px; cursor: pointer;
+  transition: all .2s cubic-bezier(.34,1.56,.64,1);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.related-card:hover {
+  border-color: var(--bdrh); background: var(--s3);
+  transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,.3);
+}
+.related-card-icon { font-size: 22px; }
+.related-card-type {
+  font-size: 9.5px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--muted);
+}
+.related-card-title {
+  font-family: 'Syne', sans-serif; font-size: 12.5px; font-weight: 700;
+  line-height: 1.35; color: var(--text);
+}
+.related-card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.related-card-tag {
+  padding: 1px 6px; border-radius: 8px; font-size: 9.5px;
+  background: var(--s4); color: var(--muted); border: 1px solid var(--bdr);
+}
+
+@media(max-width:600px) {
+  .related-grid { grid-template-columns: repeat(2, 1fr); }
+  .related-section { padding: 20px; }
+  .comment-section { padding: 20px; }
+}
+@media(max-width:380px) {
+  .related-grid { grid-template-columns: 1fr; }
+}
+</style>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN C7 — JS  →  Thêm vào CUỐI client/client.js
+
+  ⚠ Sửa trong openDetail():
+  Tìm đoạn: if (doc.hasCode) setTimeout(() => injectDetailFrame(doc), 80);
+  Thêm SAU dòng đó:
+    renderRelatedDocs(doc);
+══════════════════════════════════════════════════════════ -->
+<script id="related-js">
+// ════════════════════════════════════════════
+//  RELATED DOCS (thêm vào cuối client.js)
+// ════════════════════════════════════════════
+
+function renderRelatedDocs(currentDoc) {
+  const scroll = document.getElementById("detailScroll");
+  if (!scroll) return;
+
+  // Tìm bài liên quan: cùng type HOẶC có chung tag
+  const currentTags = parseTags(currentDoc.tags);
+  const related = allDocs
+    .filter(d => d.id !== currentDoc.id)
+    .map(d => {
+      const dTags   = parseTags(d.tags);
+      const tagMatch = currentTags.filter(t => dTags.includes(t)).length;
+      const typeMatch = d.type === currentDoc.type ? 2 : 0;
+      return { ...d, score: tagMatch + typeMatch };
+    })
+    .filter(d => d.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+
+  if (related.length === 0) return;
+
+  const typeIcons = { guide:"📖", api:"⚡", tutorial:"🎯", component:"🧩", snippet:"✂️", release:"🚀", design:"🎨" };
+  const typeNames = { guide:"Hướng dẫn", api:"API", tutorial:"Tutorial", component:"Component", snippet:"Snippet", release:"Release", design:"Design" };
+
+  const cardsHTML = related.map(d => {
+    const icon = typeIcons[d.type] || "📄";
+    const tags = parseTags(d.tags).slice(0,3).map(t =>
+      `<span class="related-card-tag">${t}</span>`).join("");
+    return `
+    <div class="related-card" onclick="openDetail('${d.id}')">
+      <div class="related-card-icon">${icon}</div>
+      <div class="related-card-type">${typeNames[d.type] || d.type}</div>
+      <div class="related-card-title">${escHtml(d.title)}</div>
+      ${tags ? `<div class="related-card-tags">${tags}</div>` : ""}
+    </div>`;
+  }).join("");
+
+  const html = `
+  <div class="related-section" id="relatedSection">
+    <div class="related-title">Bài viết liên quan</div>
+    <div class="related-grid">${cardsHTML}</div>
+  </div>`;
+
+  // Thêm vào trước comment section hoặc ở cuối
+  const cmtSection = document.getElementById("commentSection");
+  if (cmtSection) {
+    cmtSection.insertAdjacentHTML("beforebegin", html);
+  } else {
+    scroll.insertAdjacentHTML("beforeend", html);
+  }
+}
+window.renderRelatedDocs = renderRelatedDocs;
+</script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  ════════════════════════════════════════════════════════════
+  TỔNG KẾT: THỨ TỰ GỌI HÀM TRONG openDetail() sau khi SỬA
+
+  // ... sau khi render scroll.innerHTML ...
+  renderReactionBar(doc);          // Feature 2
+  incrementView(doc.id).catch(()=>{}); // Feature 2
+  if (doc.hasCode) setTimeout(() => injectDetailFrame(doc), 80);
+  renderRelatedDocs(doc);          // Feature 7
+  loadComments(doc.id);            // Feature 3
+
+  // Trong DOMContentLoaded thêm:
+  initTheme();                     // Feature 6
+  ════════════════════════════════════════════════════════════
+  ══════════════════════════════════════════════════════════ -->

@@ -1,0 +1,355 @@
+<!-- ============================================================
+  CHỨC NĂNG 5: ADMIN QUẢN LÝ BÌNH LUẬN
+  ============================================================
+  📁 HƯỚNG DẪN THÊM VÀO:
+
+  1. admin/index.html
+     → Thêm nav item mới vào sidebar
+     → Thêm page section mới vào main
+     → Thêm HTML modal báo cáo vào trước </body>
+
+  2. admin/admin.css  →  Thêm CSS vào CUỐI FILE
+
+  3. admin/admin.js   →  Thêm JS vào CUỐI FILE
+     → Import thêm từ firebase.js: listenAllComments, approveComment, deleteComment, flagComment
+  ============================================================ -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN A1 — admin/index.html
+  Tìm: <div class="nav-section-label" style="margin-top:20px">Liên kết</div>
+  Thêm TRƯỚC dòng đó:
+══════════════════════════════════════════════════════════ -->
+
+<!-- [NAV ITEM - thêm vào sidebar] -->
+<a class="nav-item" data-page="comments" onclick="showPage('comments')">
+  <span class="nav-icon">💬</span> Bình luận
+  <span class="nav-count" id="navCmtCount" style="background:rgba(255,107,107,.15);color:#ff7675">0</span>
+</a>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN A2 — admin/index.html
+  Tìm thẻ đóng </main>, thêm TRƯỚC nó:
+══════════════════════════════════════════════════════════ -->
+
+<!-- ── COMMENTS MODERATION PAGE ── -->
+<section class="page" id="page-comments">
+  <div class="page-hero">
+    <div>
+      <div class="page-title">Quản lý bình luận 💬</div>
+      <div class="page-sub">Phê duyệt, xoá và kiểm duyệt bình luận</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="setCmtFilter('pending')">⏳ Chờ duyệt</button>
+      <button class="btn btn-ghost" onclick="setCmtFilter('all')">Tất cả</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="cmt-stats-row">
+    <div class="cmt-stat pending">
+      <span class="cst-num" id="cstPending">0</span>
+      <span class="cst-label">⏳ Chờ duyệt</span>
+    </div>
+    <div class="cmt-stat approved">
+      <span class="cst-num" id="cstApproved">0</span>
+      <span class="cst-label">✓ Đã duyệt</span>
+    </div>
+    <div class="cmt-stat flagged">
+      <span class="cst-num" id="cstFlagged">0</span>
+      <span class="cst-label">🚩 Bị báo cáo</span>
+    </div>
+  </div>
+
+  <!-- Filter chips -->
+  <div class="cmt-filters">
+    <button class="cmt-filter active" id="cf-all"     onclick="setCmtFilter('all')">Tất cả</button>
+    <button class="cmt-filter"        id="cf-pending" onclick="setCmtFilter('pending')">⏳ Chờ duyệt</button>
+    <button class="cmt-filter"        id="cf-approved"onclick="setCmtFilter('approved')">✓ Đã duyệt</button>
+    <button class="cmt-filter"        id="cf-flagged" onclick="setCmtFilter('flagged')">🚩 Bị báo cáo</button>
+  </div>
+
+  <!-- Comment table -->
+  <div class="cmt-table-wrap">
+    <div id="cmtAdminList">
+      <div class="loading"><div class="spinner"></div>Đang tải bình luận…</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- MODAL: XEM BÁO CÁO / GHI CHÚ (thêm trước </body>) -->
+<div class="note-overlay" id="noteOverlay" onclick="closeNoteModal(event)">
+  <div class="note-modal">
+    <div class="note-title" id="noteTitle">Chi tiết bình luận</div>
+    <div class="note-body"  id="noteBody"></div>
+    <button class="btn btn-ghost" style="margin-top:16px;width:100%" onclick="document.getElementById('noteOverlay').classList.remove('open')">Đóng</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN B — CSS  →  Thêm vào CUỐI admin/admin.css
+══════════════════════════════════════════════════════════ -->
+<style id="cmt-admin-css">
+/* ── Comment Stats ── */
+.cmt-stats-row {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 14px; margin-bottom: 20px;
+}
+.cmt-stat {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.cmt-stat.pending  { border-left: 3px solid var(--a4); }
+.cmt-stat.approved { border-left: 3px solid var(--a3); }
+.cmt-stat.flagged  { border-left: 3px solid var(--a2); }
+.cst-num   { font-family:'Syne',sans-serif; font-size:26px; font-weight:800; }
+.cst-label { font-size:12px; color:var(--muted); }
+
+/* ── Filter chips ── */
+.cmt-filters { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+.cmt-filter {
+  padding:6px 14px; border-radius:20px; border:1px solid var(--border);
+  background:var(--s1); color:var(--muted); font-family:inherit;
+  font-size:12.5px; cursor:pointer; transition:all .14s;
+}
+.cmt-filter:hover { border-color:var(--bh); color:var(--text); }
+.cmt-filter.active { background:rgba(108,99,255,.15); border-color:rgba(108,99,255,.35); color:var(--accent); }
+
+/* ── Comment table ── */
+.cmt-table-wrap { background:var(--s1); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+
+.cmt-row {
+  display:grid; grid-template-columns:1fr auto;
+  padding:16px 20px; border-bottom:1px solid var(--border);
+  gap:12px; align-items:start;
+  transition:background .14s; animation:fadeUp .3s ease both;
+}
+.cmt-row:last-child { border-bottom:none; }
+.cmt-row:hover { background:rgba(255,255,255,.02); }
+
+.cmt-row-left { min-width:0; }
+.cmt-row-meta {
+  display:flex; align-items:center; gap:10px;
+  margin-bottom:6px; flex-wrap:wrap;
+}
+.cmt-author { font-size:13px; font-weight:600; color:var(--text); }
+.cmt-email  { font-size:11px; color:var(--dim); }
+.cmt-ts     { font-size:11px; color:var(--dim); margin-left:auto; }
+.cmt-doc-link { font-size:11px; color:var(--accent); cursor:pointer; text-decoration:underline; }
+.cmt-text-preview {
+  font-size:13.5px; color:var(--muted); line-height:1.55;
+  word-break:break-word;
+}
+
+/* Status badges */
+.cmt-status {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:2px 8px; border-radius:10px; font-size:10.5px; font-weight:600;
+  letter-spacing:.3px;
+}
+.cmt-status.pending  { background:rgba(253,203,110,.12); color:var(--a4); }
+.cmt-status.approved { background:rgba(99,255,200,.1); color:var(--a3); }
+.cmt-status.flagged  { background:rgba(255,99,165,.12); color:var(--a2); }
+
+/* Action buttons */
+.cmt-actions { display:flex; gap:5px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
+.cmt-act {
+  padding:5px 11px; border-radius:6px; border:1px solid var(--border);
+  background:none; color:var(--muted); font-family:inherit; font-size:11.5px;
+  cursor:pointer; transition:all .13s; white-space:nowrap;
+}
+.cmt-act:hover { background:var(--s2); color:var(--text); border-color:var(--bh); }
+.cmt-act.approve { color:var(--a3); border-color:rgba(99,255,200,.2); }
+.cmt-act.approve:hover { background:rgba(99,255,200,.1); }
+.cmt-act.flag    { color:var(--a2); border-color:rgba(255,99,165,.2); }
+.cmt-act.flag:hover    { background:rgba(255,99,165,.1); }
+.cmt-act.del     { color:#ff6b6b; border-color:rgba(255,107,107,.2); }
+.cmt-act.del:hover     { background:rgba(255,107,107,.1); }
+
+/* Note modal */
+.note-overlay {
+  position:fixed;inset:0;z-index:400;
+  background:rgba(0,0,0,.65);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.note-overlay.open { opacity:1; pointer-events:all; }
+.note-modal {
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:16px;padding:24px;max-width:420px;width:100%;
+  transform:scale(.95);transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.note-overlay.open .note-modal { transform:scale(1); }
+.note-title { font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:14px; }
+.note-body  { font-size:14px;color:var(--muted);line-height:1.6; }
+
+@media(max-width:768px){
+  .cmt-stats-row { grid-template-columns:1fr; }
+  .cmt-row { grid-template-columns:1fr; }
+  .cmt-actions { justify-content:flex-start; }
+  .cmt-ts { margin-left:0; }
+}
+</style>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN C — JS  →  Thêm vào CUỐI admin/admin.js
+
+  ⚠ Import thêm vào ĐẦU FILE admin.js:
+  import { listenAllComments, approveComment, deleteComment, flagComment }
+    from "../shared/firebase.js";
+  import { onAuthChange } from "../shared/auth.js";
+══════════════════════════════════════════════════════════ -->
+<script id="cmt-admin-js">
+// ════════════════════════════════════════════
+//  ADMIN COMMENT MODERATION (thêm vào cuối admin.js)
+// ════════════════════════════════════════════
+
+// Thêm "comments" vào hàm showPage() → renderPage(page) hiện tại:
+// if (name === "comments") loadAllDocComments();
+// (Sửa trong hàm showPage đã có trong admin.js)
+
+let allAdminComments = [];   // { docId, ...comment }
+let cmtFilter        = "all";
+let _cmtUnsubscribes = [];
+
+async function loadAllDocComments() {
+  // Unsubscribe cũ
+  _cmtUnsubscribes.forEach(u => u());
+  _cmtUnsubscribes = [];
+  allAdminComments = [];
+
+  const cmtList = document.getElementById("cmtAdminList");
+  if (cmtList) cmtList.innerHTML = `<div class="loading"><div class="spinner"></div>Đang tải…</div>`;
+
+  // Lắng nghe comment từ mỗi document
+  for (const docItem of allDocs) {
+    const unsub = listenAllComments(docItem.id, (comments) => {
+      // Gắn docId vào mỗi comment
+      const tagged = comments.map(c => ({
+        ...c, docId: docItem.id, docTitle: docItem.title
+      }));
+      // Thay thế comments của doc này
+      allAdminComments = [
+        ...allAdminComments.filter(c => c.docId !== docItem.id),
+        ...tagged
+      ];
+      // Sort by createdAt mới nhất
+      allAdminComments.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+      renderAdminComments();
+    });
+    _cmtUnsubscribes.push(unsub);
+  }
+}
+window.loadAllDocComments = loadAllDocComments;
+
+function renderAdminComments() {
+  let filtered = allAdminComments;
+  if (cmtFilter === "pending")  filtered = allAdminComments.filter(c => !c.approved && !c.flagged);
+  if (cmtFilter === "approved") filtered = allAdminComments.filter(c => c.approved);
+  if (cmtFilter === "flagged")  filtered = allAdminComments.filter(c => c.flagged);
+
+  // Update stats
+  const pending  = allAdminComments.filter(c => !c.approved && !c.flagged).length;
+  const approved = allAdminComments.filter(c => c.approved).length;
+  const flagged  = allAdminComments.filter(c => c.flagged).length;
+  const el = id => document.getElementById(id);
+  if (el("cstPending"))  el("cstPending").textContent  = pending;
+  if (el("cstApproved")) el("cstApproved").textContent = approved;
+  if (el("cstFlagged"))  el("cstFlagged").textContent  = flagged;
+  if (el("navCmtCount")) el("navCmtCount").textContent = pending;
+
+  const list = document.getElementById("cmtAdminList");
+  if (!list) return;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty" style="padding:40px"><div class="empty-ico">💬</div>
+      <div class="empty-t">Không có bình luận</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(c => {
+    const ts = c.createdAt?.seconds
+      ? new Date(c.createdAt.seconds * 1000).toLocaleString("vi-VN") : "—";
+
+    let statusBadge = "";
+    if (c.flagged)        statusBadge = `<span class="cmt-status flagged">🚩 Bị báo cáo</span>`;
+    else if (c.approved)  statusBadge = `<span class="cmt-status approved">✓ Đã duyệt</span>`;
+    else                  statusBadge = `<span class="cmt-status pending">⏳ Chờ duyệt</span>`;
+
+    return `
+    <div class="cmt-row">
+      <div class="cmt-row-left">
+        <div class="cmt-row-meta">
+          <span class="cmt-author">${escHtml(c.authorName || "Ẩn danh")}</span>
+          <span class="cmt-email">${escHtml(c.authorEmail || "")}</span>
+          ${statusBadge}
+          <span class="cmt-ts">${ts}</span>
+        </div>
+        <div class="cmt-text-preview">${escHtml(c.text)}</div>
+        <div style="margin-top:6px;font-size:11px;color:var(--dim)">
+          📄 <span class="cmt-doc-link" onclick="viewDoc('${c.docId}')">${escHtml(c.docTitle||c.docId)}</span>
+        </div>
+      </div>
+      <div class="cmt-actions">
+        ${!c.approved && !c.flagged
+          ? `<button class="cmt-act approve" onclick="adminApproveCmt('${c.docId}','${c.id}')">✓ Duyệt</button>`
+          : ``}
+        ${!c.flagged
+          ? `<button class="cmt-act flag" onclick="adminFlagCmt('${c.docId}','${c.id}',true)">🚩 Flag</button>`
+          : `<button class="cmt-act" onclick="adminFlagCmt('${c.docId}','${c.id}',false)">↩ Bỏ flag</button>`}
+        <button class="cmt-act del" onclick="adminDeleteCmt('${c.docId}','${c.id}','${escHtml(c.text).slice(0,30)}')">🗑️ Xoá</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function setCmtFilter(f) {
+  cmtFilter = f;
+  document.querySelectorAll(".cmt-filter").forEach(b => {
+    b.classList.toggle("active", b.id === "cf-" + f);
+  });
+  renderAdminComments();
+}
+window.setCmtFilter = setCmtFilter;
+
+async function adminApproveCmt(docId, cmtId) {
+  try {
+    await approveComment(docId, cmtId);
+    showToast("✓ Đã phê duyệt bình luận", "success");
+  } catch(e) { showToast("Lỗi: " + e.message, "error"); }
+}
+window.adminApproveCmt = adminApproveCmt;
+
+async function adminFlagCmt(docId, cmtId, flag) {
+  try {
+    await flagComment(docId, cmtId, flag);
+    showToast(flag ? "🚩 Đã đánh dấu không phù hợp" : "✓ Đã bỏ đánh dấu", flag ? "warning" : "success");
+  } catch(e) { showToast("Lỗi: " + e.message, "error"); }
+}
+window.adminFlagCmt = adminFlagCmt;
+
+async function adminDeleteCmt(docId, cmtId, preview) {
+  const ok = await confirmDialog({
+    title: "Xoá bình luận?",
+    message: `Bình luận "${preview}…" sẽ bị xoá vĩnh viễn.`,
+    icon: "🗑️", okText: "Xoá bình luận", okStyle: "danger"
+  });
+  if (!ok) return;
+  try {
+    await deleteComment(docId, cmtId);
+    showToast("🗑️ Đã xoá bình luận", "success");
+  } catch(e) { showToast("Lỗi: " + e.message, "error"); }
+}
+window.adminDeleteCmt = adminDeleteCmt;
+
+function closeNoteModal(e) {
+  if (e.target.id === "noteOverlay")
+    document.getElementById("noteOverlay").classList.remove("open");
+}
+window.closeNoteModal = closeNoteModal;
+</script>

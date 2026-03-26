@@ -387,7 +387,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);ove
 .client-empty{
   grid-column:1/-1;text-align:center;padding:100px 20px;
 }
-.ce-icon{font-size:56px;opacity:.8;margin-bottom:18px}
+.ce-icon{font-size:56px;opacity:.25;margin-bottom:18px}
 .ce-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-bottom:8px}
 .ce-desc{font-size:14px;color:var(--muted)}
 

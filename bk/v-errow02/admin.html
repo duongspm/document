@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocVault Admin</title>
+  <link rel="icon" href="gemini.svg" type="image/x-icon" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-title">DocVault</div>
+      <div class="logo-sub">Admin Panel</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Workspace</div>
+    <a class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">
+      <span class="nav-icon">◈</span> Dashboard
+    </a>
+    <a class="nav-item" data-page="documents" onclick="showPage('documents')">
+      <span class="nav-icon">◉</span> Tài liệu
+      <span class="nav-count" id="navCount">0</span>
+    </a>
+    <a class="nav-item" data-page="add" onclick="showPage('add')">
+      <span class="nav-icon">◎</span> Thêm mới
+    </a>
+
+    <div class="nav-section-label" style="margin-top:20px">Liên kết</div>
+    <a class="nav-item" href="index.html" target="_blank">
+      <span class="nav-icon">◐</span> Client View ↗
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="user-avatar">A</div>
+      <div>
+        <div class="user-name">Admin</div>
+        <div class="user-role">DocVault Manager</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main" id="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <button class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-search">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Tìm kiếm tài liệu..." autocomplete="off">
+    </div>
+    <div class="topbar-right">
+      <div class="conn-status" id="connStatus">
+        <span class="conn-dot"></span> Đang kết nối…
+      </div>
+      <button class="btn btn-primary" onclick="showPage('add')">+ Thêm tài liệu</button>
+    </div>
+  </header>
+
+  <!-- ── DASHBOARD ────────────────────────────────── -->
+  <section class="page active" id="page-dashboard">
+    <div class="page-hero">
+      <div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Tổng quan kho tài liệu của bạn</div>
+      </div>
+      <button class="btn btn-primary" onclick="showPage('add')">+ Tài liệu mới</button>
+    </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card" id="sc-total">
+        <div class="stat-label">Tổng tài liệu</div>
+        <div class="stat-num">—</div>
+      </div>
+      <div class="stat-card" id="sc-code">
+        <div class="stat-label">Có code demo</div>
+        <div class="stat-num">—</div>
+      </div>
+      <div class="stat-card" id="sc-tags">
+        <div class="stat-label">Tags duy nhất</div>
+        <div class="stat-num">—</div>
+      </div>
+      <div class="stat-card" id="sc-today">
+        <div class="stat-label">Hôm nay</div>
+        <div class="stat-num">—</div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Tài liệu gần đây</div>
+    </div>
+    <div class="docs-grid" id="dashGrid"></div>
+  </section>
+
+  <!-- ── ALL DOCUMENTS ────────────────────────────── -->
+  <section class="page" id="page-documents">
+    <div class="page-hero">
+      <div>
+        <div class="page-title">Tất cả tài liệu</div>
+        <div class="page-sub" id="docsCount">Đang tải…</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-tabs" id="filterTabs">
+        <button class="ftab active" data-tag="all">Tất cả</button>
+      </div>
+    </div>
+
+    <div class="docs-grid" id="allDocsGrid"></div>
+  </section>
+
+  <!-- ── ADD / EDIT ────────────────────────────────── -->
+  <section class="page" id="page-add">
+    <div class="page-hero">
+      <div>
+        <div class="page-title" id="formTitle">Thêm tài liệu mới</div>
+        <div class="page-sub">Điền thông tin và nội dung tài liệu</div>
+      </div>
+      <button class="btn btn-ghost" onclick="cancelEdit()">Huỷ</button>
+    </div>
+
+    <form class="doc-form" id="docForm" onsubmit="handleSubmit(event)">
+      <input type="hidden" id="editId">
+
+      <div class="form-grid">
+        <div class="form-group span2">
+          <label class="form-label">Tiêu đề <span class="req">*</span></label>
+          <input class="form-input" type="text" id="fTitle" placeholder="Tên tài liệu..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Loại</label>
+          <select class="form-input" id="fType">
+            <option value="guide">📖 Hướng dẫn</option>
+            <option value="api">⚡ API Reference</option>
+            <option value="tutorial">🎯 Tutorial</option>
+            <option value="component">🧩 Component</option>
+            <option value="snippet">✂️ Snippet</option>
+            <option value="release">🚀 Release</option>
+            <option value="design">🎨 Design</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tác giả</label>
+          <input class="form-input" type="text" id="fAuthor" placeholder="Tên tác giả...">
+        </div>
+        <div class="form-group span2">
+          <label class="form-label">Mô tả ngắn</label>
+          <input class="form-input" type="text" id="fDesc" placeholder="Tóm tắt nội dung tài liệu...">
+        </div>
+        <div class="form-group span2">
+          <label class="form-label">Tags <span class="hint">(cách nhau bằng dấu phẩy)</span></label>
+          <input class="form-input" type="text" id="fTags" placeholder="javascript, css, animation, react...">
+        </div>
+      </div>
+
+      <!-- Markdown content -->
+      <div class="form-group" style="margin-top:24px">
+        <label class="form-label">Nội dung Markdown</label>
+        <div class="editor-tabs">
+          <button type="button" class="etab active" onclick="switchEditorTab('write')">✏️ Viết</button>
+          <button type="button" class="etab" onclick="switchEditorTab('preview')">👁 Xem trước</button>
+        </div>
+        <textarea class="form-textarea" id="fContent" placeholder="## Tiêu đề&#10;&#10;Nội dung hỗ trợ **markdown**...&#10;&#10;- Bullet 1&#10;- Bullet 2&#10;&#10;`code inline` hoặc:&#10;&#10;```js&#10;const x = 1;&#10;```"></textarea>
+        <div class="md-preview" id="mdPreview" style="display:none"></div>
+      </div>
+
+      <!-- Code demo section -->
+      <div class="code-section">
+        <div class="code-section-header">
+          <div>
+            <div class="code-section-title">🖥️ Code Demo (tuỳ chọn)</div>
+            <div class="code-section-sub">Thêm code HTML/CSS/JS để hiển thị demo trực tiếp như CodePen</div>
+          </div>
+          <label class="toggle-wrap">
+            <input type="checkbox" id="hasCode" onchange="toggleCodeSection(this.checked)">
+            <span class="toggle"></span>
+            <span>Bật demo</span>
+          </label>
+        </div>
+
+        <div id="codeEditors" style="display:none">
+          <div class="code-tabs">
+            <button type="button" class="ctab active" onclick="switchCodeTab('html')">HTML</button>
+            <button type="button" class="ctab" onclick="switchCodeTab('css')">CSS</button>
+            <button type="button" class="ctab" onclick="switchCodeTab('js')">JavaScript</button>
+            <button type="button" class="ctab preview-btn" onclick="previewCode()">▶ Preview</button>
+          </div>
+          <div class="code-pane active" id="pane-html">
+            <textarea class="code-editor" id="codeHtml" spellcheck="false" placeholder="<!-- HTML code ở đây -->&#10;<div class=&quot;box&quot;>Hello World</div>"></textarea>
+          </div>
+          <div class="code-pane" id="pane-css">
+            <textarea class="code-editor" id="codeCss" spellcheck="false" placeholder="/* CSS styles */&#10;.box { color: hotpink; }"></textarea>
+          </div>
+          <div class="code-pane" id="pane-js">
+            <textarea class="code-editor" id="codeJs" spellcheck="false" placeholder="// JavaScript&#10;console.log('Hello!')"></textarea>
+          </div>
+          <div class="code-preview-wrap" id="codePreviewWrap" style="display:none">
+            <div class="preview-toolbar">
+              <span>Live Preview</span>
+              <button type="button" onclick="document.getElementById('codePreviewWrap').style.display='none'">✕</button>
+            </div>
+            <iframe id="codePreviewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" onclick="cancelEdit()">Huỷ</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">💾 Lưu tài liệu</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ── VIEW DETAIL ───────────────────────────────── -->
+  <section class="page" id="page-view">
+    <div style="margin-bottom:24px; display:flex; gap:10px; align-items:center">
+      <button class="btn btn-ghost" onclick="goBack()">← Quay lại</button>
+      <div style="margin-left:auto; display:flex; gap:8px">
+        <button class="btn btn-ghost" id="editBtn" onclick="editCurrentDoc()">✏️ Chỉnh sửa</button>
+        <button class="btn btn-danger" id="deleteBtn" onclick="deleteCurrentDoc()">🗑️ Xoá</button>
+      </div>
+    </div>
+    <div id="viewContent"></div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module" src="admin.js"></script>
+<script src="shared/firebase.js"></script>
+</body>
+</html>

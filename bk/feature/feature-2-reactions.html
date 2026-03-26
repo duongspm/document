@@ -1,0 +1,329 @@
+<!-- ============================================================
+  CHỨC NĂNG 2: LIKE / DISLIKE / SHARE / MORE
+  ============================================================
+  📁 HƯỚNG DẪN THÊM VÀO:
+
+  1. shared/firebase.js
+     → Thêm các export functions ở CUỐI FILE
+
+  2. client/client.html
+     → Không cần thêm HTML riêng (render bằng JS vào detail panel)
+
+  3. client/client.css
+     → Thêm CSS vào CUỐI FILE
+
+  4. client/client.js
+     → Thêm JS vào CUỐI FILE
+  ============================================================ -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN A — THÊM VÀO shared/firebase.js
+  Tìm dòng cuối cùng của file, thêm TIẾP THEO sau listenDocuments
+══════════════════════════════════════════════════════════ -->
+<script id="firebase-additions">
+// Thêm import này vào phần import đầu file:
+// arrayUnion, arrayRemove, increment
+// import { ..., arrayUnion, arrayRemove, increment } from "..."
+
+// ── Like / Dislike ───────────────────────────────────────────
+export const toggleLike = async (docId, userId) => {
+  const ref  = doc(db, DOCS_COL, docId);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+  const likes    = data.likes    || [];
+  const dislikes = data.dislikes || [];
+
+  if (likes.includes(userId)) {
+    // Bỏ like
+    return updateDoc(ref, { likes: arrayRemove(userId) });
+  } else {
+    // Thêm like, bỏ dislike nếu có
+    return updateDoc(ref, {
+      likes:    arrayUnion(userId),
+      dislikes: arrayRemove(userId),
+    });
+  }
+};
+
+export const toggleDislike = async (docId, userId) => {
+  const ref  = doc(db, DOCS_COL, docId);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+  const dislikes = data.dislikes || [];
+
+  if (dislikes.includes(userId)) {
+    return updateDoc(ref, { dislikes: arrayRemove(userId) });
+  } else {
+    return updateDoc(ref, {
+      dislikes: arrayUnion(userId),
+      likes:    arrayRemove(userId),
+    });
+  }
+};
+
+export const incrementView = (docId) =>
+  updateDoc(doc(db, DOCS_COL, docId), { views: increment(1) });
+</script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN B — CSS  →  Thêm vào CUỐI client/client.css
+══════════════════════════════════════════════════════════ -->
+<style id="reaction-css">
+/* ── Reaction Bar ── */
+.reaction-bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 14px 32px; border-top: 1px solid var(--bdr);
+  background: rgba(255,255,255,.02);
+  flex-wrap: wrap;
+}
+
+.react-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px; border-radius: 20px;
+  border: 1px solid var(--bdr); background: none;
+  color: var(--muted); font-family: inherit; font-size: 13px;
+  cursor: pointer; transition: all .18s;
+  user-select: none;
+}
+.react-btn:hover { border-color: var(--bdrh); background: rgba(255,255,255,.04); color: var(--text); }
+.react-btn.liked    { background: rgba(108,92,231,.15); border-color: rgba(108,92,231,.4); color: var(--acc); }
+.react-btn.disliked { background: rgba(253,121,168,.12); border-color: rgba(253,121,168,.35); color: var(--acc2); }
+.react-btn.shared   { background: rgba(85,239,196,.1);   border-color: rgba(85,239,196,.3);  color: var(--acc3); }
+
+.react-btn .rbtn-icon { font-size: 15px; }
+.react-btn .rbtn-count { font-weight: 600; min-width: 14px; }
+
+/* Pulse animation khi click */
+@keyframes reactPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.react-btn.popping .rbtn-icon { animation: reactPop .3s cubic-bezier(.34,1.56,.64,1); }
+
+/* More dropdown */
+.more-wrap { position: relative; margin-left: auto; }
+.more-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--s2); border: 1px solid var(--bdr);
+  border-radius: 12px; min-width: 170px;
+  box-shadow: 0 12px 36px rgba(0,0,0,.5);
+  z-index: 50; overflow: hidden;
+  animation: dropIn .2s ease;
+}
+@keyframes dropIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:none; } }
+.more-dropdown.hidden { display: none; }
+.more-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 13.5px; color: var(--muted);
+  cursor: pointer; transition: all .13s;
+}
+.more-item:hover { background: var(--s3); color: var(--text); }
+
+/* Share popup toast */
+.share-popup {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--s2); border: 1px solid var(--bdr);
+  border-radius: 14px; padding: 14px 20px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.5);
+  z-index: 600; min-width: 280px;
+  animation: sharePopIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes sharePopIn { from{opacity:0;transform:translateX(-50%) translateY(20px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+.share-popup-title { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.share-methods { display: flex; gap: 8px; }
+.share-method {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 8px; border-radius: 10px; border: 1px solid var(--bdr);
+  background: var(--s3); cursor: pointer; font-size: 11px; color: var(--muted);
+  transition: all .15s;
+}
+.share-method:hover { background: var(--s4); color: var(--text); border-color: var(--bdrh); }
+.share-method .sm-icon { font-size: 20px; }
+</style>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN C — JAVASCRIPT  →  Thêm vào CUỐI client/client.js
+
+  ⚠ Import thêm vào ĐẦU FILE client.js:
+  import { toggleLike, toggleDislike, incrementView } from "../shared/firebase.js";
+══════════════════════════════════════════════════════════ -->
+<script id="reaction-js">
+// ════════════════════════════
+//  REACTIONS (thêm vào cuối client.js)
+// ════════════════════════════
+
+// Gọi hàm này từ openDetail() sau khi render xong content
+// Tìm dòng: scroll.innerHTML = `...`
+// Sau đó gọi: renderReactionBar(doc);
+// VÀ thêm: incrementView(doc.id);
+
+function renderReactionBar(doc) {
+  const user    = currentUser();
+  const uid     = user?.uid;
+  const likes   = doc.likes    || [];
+  const dislikes= doc.dislikes || [];
+  const views   = doc.views    || 0;
+
+  const isLiked    = uid && likes.includes(uid);
+  const isDisliked = uid && dislikes.includes(uid);
+
+  const html = `
+  <div class="reaction-bar" id="reactionBar">
+    <button class="react-btn ${isLiked ? 'liked' : ''}" id="btnLike" onclick="handleReact('like','${doc.id}')">
+      <span class="rbtn-icon">👍</span>
+      <span class="rbtn-count" id="likeCount">${likes.length}</span>
+    </button>
+    <button class="react-btn ${isDisliked ? 'disliked' : ''}" id="btnDislike" onclick="handleReact('dislike','${doc.id}')">
+      <span class="rbtn-icon">👎</span>
+      <span class="rbtn-count" id="dislikeCount">${dislikes.length}</span>
+    </button>
+    <button class="react-btn" onclick="openSharePopup('${doc.id}','${escHtml(doc.title)}')">
+      <span class="rbtn-icon">↗</span>
+      <span>Chia sẻ</span>
+    </button>
+    <span style="font-size:12px;color:var(--dim);margin-left:4px">👁 ${views} lượt xem</span>
+    <div class="more-wrap">
+      <button class="react-btn" onclick="toggleMoreMenu(event)">
+        <span class="rbtn-icon">⋯</span>
+        <span>More</span>
+      </button>
+      <div class="more-dropdown hidden" id="moreDropdown">
+        <div class="more-item" onclick="copyDocLink('${doc.id}')">🔗 Copy link</div>
+        <div class="more-item" onclick="reportDoc('${doc.id}')">🚩 Báo cáo</div>
+        <div class="more-item" onclick="printDoc()">🖨 In trang</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Tìm và thêm vào sau detail-hero
+  const heroEl = document.querySelector(".detail-hero");
+  if (heroEl) heroEl.insertAdjacentHTML("afterend", html);
+}
+window.renderReactionBar = renderReactionBar;
+
+async function handleReact(type, docId) {
+  const user = currentUser();
+  if (!user) { openAuthModal("login"); showToast("Vui lòng đăng nhập để tương tác", "info"); return; }
+
+  const btn = document.getElementById(type === "like" ? "btnLike" : "btnDislike");
+  btn.querySelector(".rbtn-icon").style.animation = "none";
+  setTimeout(() => btn.classList.add("popping"), 10);
+
+  try {
+    if (type === "like")    await toggleLike(docId, user.uid);
+    else                    await toggleDislike(docId, user.uid);
+
+    // Cập nhật UI lạc quan (optimistic update)
+    const countEl = document.getElementById(type === "like" ? "likeCount" : "dislikeCount");
+    const isActive = btn.classList.toggle(type === "like" ? "liked" : "disliked");
+    const curr = parseInt(countEl.textContent) || 0;
+    countEl.textContent = isActive ? curr + 1 : Math.max(0, curr - 1);
+
+    // Bỏ trạng thái phản ứng ngược
+    if (type === "like") {
+      const dBtn = document.getElementById("btnDislike");
+      if (dBtn?.classList.contains("disliked")) {
+        dBtn.classList.remove("disliked");
+        const dc = document.getElementById("dislikeCount");
+        dc.textContent = Math.max(0, (parseInt(dc.textContent) || 0) - 1);
+      }
+    }
+  } catch(e) { showToast("Lỗi: " + e.message, "error"); }
+}
+window.handleReact = handleReact;
+
+function openSharePopup(docId, title) {
+  // Remove cũ nếu có
+  document.getElementById("sharePopupEl")?.remove();
+
+  const url     = `${location.origin}${location.pathname}?doc=${docId}`;
+  const encoded = encodeURIComponent(url);
+  const text    = encodeURIComponent(title);
+
+  const el = document.createElement("div");
+  el.id = "sharePopupEl";
+  el.className = "share-popup";
+  el.innerHTML = `
+    <div class="share-popup-title">📤 Chia sẻ tài liệu</div>
+    <div class="share-methods">
+      <div class="share-method" onclick="shareTo('copy','${url}')">
+        <span class="sm-icon">🔗</span><span>Copy link</span>
+      </div>
+      <div class="share-method" onclick="shareTo('facebook','${encoded}')">
+        <span class="sm-icon">📘</span><span>Facebook</span>
+      </div>
+      <div class="share-method" onclick="shareTo('twitter','${encoded}','${text}')">
+        <span class="sm-icon">🐦</span><span>Twitter</span>
+      </div>
+      <div class="share-method" onclick="shareTo('telegram','${encoded}','${text}')">
+        <span class="sm-icon">✈️</span><span>Telegram</span>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+
+  // Tự đóng sau 6 giây hoặc click ngoài
+  setTimeout(() => el.remove(), 6000);
+  document.addEventListener("click", function h(e) {
+    if (!el.contains(e.target)) { el.remove(); document.removeEventListener("click", h); }
+  }, true);
+}
+window.openSharePopup = openSharePopup;
+
+function shareTo(method, url, text = "") {
+  if (method === "copy") {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast("✓ Đã copy link!", "success");
+      document.getElementById("sharePopupEl")?.remove();
+    });
+  } else if (method === "facebook") {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, "_blank");
+  } else if (method === "twitter") {
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, "_blank");
+  } else if (method === "telegram") {
+    window.open(`https://t.me/share/url?url=${url}&text=${text}`, "_blank");
+  }
+}
+window.shareTo = shareTo;
+
+function toggleMoreMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById("moreDropdown");
+  dd?.classList.toggle("hidden");
+  // Đóng khi click ngoài
+  document.addEventListener("click", () => dd?.classList.add("hidden"), { once: true });
+}
+window.toggleMoreMenu = toggleMoreMenu;
+
+function copyDocLink(docId) {
+  const url = `${location.origin}${location.pathname}?doc=${docId}`;
+  navigator.clipboard.writeText(url).then(() => showToast("✓ Đã copy link!", "success"));
+  document.getElementById("moreDropdown")?.classList.add("hidden");
+}
+window.copyDocLink = copyDocLink;
+
+function reportDoc(docId) {
+  showToast("🚩 Đã gửi báo cáo. Cảm ơn bạn!", "info");
+  document.getElementById("moreDropdown")?.classList.add("hidden");
+}
+window.reportDoc = reportDoc;
+
+function printDoc() {
+  window.print();
+}
+window.printDoc = printDoc;
+</script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN D — SỬA openDetail() trong client.js
+  Tìm hàm openDetail() → Tìm đoạn cuối cùng render scroll.innerHTML
+  Thêm 2 dòng SAU scroll.innerHTML = `...`:
+  
+    renderReactionBar(doc);
+    incrementView(doc.id).catch(()=>{});
+══════════════════════════════════════════════════════════ -->

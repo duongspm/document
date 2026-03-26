@@ -1,0 +1,298 @@
+<!-- ============================================================
+  CHỨC NĂNG 4: TOAST THÔNG BÁO + MODAL XÁC NHẬN
+  ============================================================
+  📁 HƯỚNG DẪN THÊM VÀO:
+
+  Toàn bộ chức năng này dùng CHUNG cho cả admin và client.
+  
+  CLIENT:
+  → client/client.css   thêm CSS vào CUỐI FILE
+  → client/client.js    thêm JS vào CUỐI FILE (thay thế hàm showFloatToast cũ)
+  → client/client.html  thêm HTML vào TRƯỚC </body>
+
+  ADMIN:
+  → admin/admin.css     thêm CSS vào CUỐI FILE
+  → admin/admin.js      thêm JS vào CUỐI FILE (thay thế hàm toast cũ)
+  → admin/index.html    thêm HTML vào TRƯỚC </body>
+  ============================================================ -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN A — HTML (cho cả client và admin)
+  Thêm vào TRƯỚC </body> trong cả 2 file html
+══════════════════════════════════════════════════════════ -->
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal" id="confirmModal">
+    <div class="confirm-icon" id="confirmIcon">⚠️</div>
+    <div class="confirm-title" id="confirmTitle">Xác nhận</div>
+    <div class="confirm-msg"   id="confirmMsg">Bạn chắc chắn muốn thực hiện?</div>
+    <div class="confirm-actions">
+      <button class="confirm-btn cancel" onclick="resolveConfirm(false)">Huỷ</button>
+      <button class="confirm-btn ok"     id="confirmOkBtn" onclick="resolveConfirm(true)">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN B — CSS (thêm vào cuối cả client.css và admin.css)
+══════════════════════════════════════════════════════════ -->
+<style id="toast-css">
+/* ══ TOAST NOTIFICATIONS ══ */
+.toast-container {
+  position: fixed; top: 20px; right: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 9999; pointer-events: none;
+  max-width: 360px; width: calc(100vw - 40px);
+}
+
+.dv-toast {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 13px 16px; border-radius: 12px;
+  font-size: 13.5px; line-height: 1.45;
+  pointer-events: all; cursor: pointer;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  border: 1px solid transparent;
+  animation: toastSlideIn .35s cubic-bezier(.34,1.56,.64,1);
+  position: relative; overflow: hidden;
+}
+.dv-toast::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  height: 3px; width: 100%;
+  animation: toastProgress linear forwards;
+}
+
+/* Types */
+.dv-toast.success {
+  background: rgba(17,17,26,.95); border-color: rgba(85,239,196,.3);
+  color: #55efc4;
+}
+.dv-toast.success .toast-icon::before { content: '✓'; }
+.dv-toast.success::after { background: #55efc4; animation-duration: 3s; }
+
+.dv-toast.error {
+  background: rgba(17,17,26,.95); border-color: rgba(255,107,107,.3);
+  color: #ff7675;
+}
+.dv-toast.error .toast-icon::before { content: '✗'; }
+.dv-toast.error::after { background: #ff7675; animation-duration: 4s; }
+
+.dv-toast.info {
+  background: rgba(17,17,26,.95); border-color: rgba(108,92,231,.3);
+  color: #a29bfe;
+}
+.dv-toast.info .toast-icon::before { content: 'ℹ'; }
+.dv-toast.info::after { background: #a29bfe; animation-duration: 3s; }
+
+.dv-toast.warning {
+  background: rgba(17,17,26,.95); border-color: rgba(253,203,110,.3);
+  color: #fdcb6e;
+}
+.dv-toast.warning .toast-icon::before { content: '⚠'; }
+.dv-toast.warning::after { background: #fdcb6e; animation-duration: 3.5s; }
+
+.toast-icon {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; background: currentColor;
+  color: var(--bg); margin-top: 1px;
+}
+.toast-content { flex: 1; }
+.toast-title   { font-weight: 600; color: #f0f0ff; margin-bottom: 2px; }
+.toast-body    { color: #9090b8; font-size: 12.5px; }
+.toast-close   {
+  background: none; border: none; color: rgba(255,255,255,.25);
+  font-size: 14px; cursor: pointer; padding: 0; line-height: 1;
+  transition: color .15s; flex-shrink: 0;
+}
+.toast-close:hover { color: rgba(255,255,255,.6); }
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(30px) scale(.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toastSlideOut {
+  to { opacity: 0; transform: translateX(30px) scale(.9); max-height: 0; margin: 0; padding: 0; }
+}
+@keyframes toastProgress { from { width: 100%; } to { width: 0%; } }
+
+
+/* ══ CONFIRM MODAL ══ */
+.confirm-overlay {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity .2s ease;
+}
+.confirm-overlay.open { opacity: 1; pointer-events: all; }
+
+.confirm-modal {
+  background: #0e0e1a; border: 1px solid rgba(255,255,255,.08);
+  border-radius: 18px; padding: 32px 28px 24px;
+  max-width: 360px; width: 100%; text-align: center;
+  transform: scale(.9) translateY(10px);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 24px 60px rgba(0,0,0,.7);
+}
+.confirm-overlay.open .confirm-modal { transform: scale(1) translateY(0); }
+
+.confirm-icon  { font-size: 40px; margin-bottom: 14px; }
+.confirm-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 8px; color: #f0f0ff; }
+.confirm-msg   { font-size: 14px; color: #8080b0; line-height: 1.6; margin-bottom: 22px; }
+
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-btn {
+  flex: 1; padding: 11px; border-radius: 10px;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; transition: all .18s;
+}
+.confirm-btn.cancel {
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+  color: #8080b0;
+}
+.confirm-btn.cancel:hover { background: rgba(255,255,255,.1); color: #f0f0ff; }
+.confirm-btn.ok {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: #fff; box-shadow: 0 4px 14px rgba(255,107,107,.3);
+}
+.confirm-btn.ok:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,107,107,.45); }
+.confirm-btn.ok.safe {
+  background: linear-gradient(135deg, #6c5ce7, #8c84ff);
+  box-shadow: 0 4px 14px rgba(108,92,231,.3);
+}
+</style>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN C — JS (thêm vào cuối cả client.js và admin.js)
+  ⚠ Hàm showToast() này THAY THẾ các hàm toast/showFloatToast cũ
+══════════════════════════════════════════════════════════ -->
+<script id="toast-js">
+// ════════════════════════════════════════════
+//  TOAST SYSTEM (thêm vào cuối client.js & admin.js)
+// ════════════════════════════════════════════
+
+/**
+ * showToast(message, type, options)
+ * type: 'success' | 'error' | 'info' | 'warning'
+ * options: { title, duration }
+ * 
+ * Ví dụ:
+ *   showToast("Bình luận đã được đăng ✓", "success")
+ *   showToast("Không thể tải dữ liệu ✗", "error")
+ *   showToast("Đang xử lý...", "info", { title: "Hệ thống", duration: 2000 })
+ */
+function showToast(message, type = "info", options = {}) {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+
+  const { title = "", duration = 3000 } = options;
+  const id = "toast_" + Date.now();
+
+  const el = document.createElement("div");
+  el.className = `dv-toast ${type}`;
+  el.id = id;
+  el.style.animationDuration = ".35s";
+
+  const titleHTML = title ? `<div class="toast-title">${title}</div>` : "";
+  const bodyHTML  = `<div class="toast-body">${message}</div>`;
+
+  el.innerHTML = `
+    <div class="toast-icon"></div>
+    <div class="toast-content">
+      ${titleHTML}
+      ${title ? bodyHTML : `<div class="toast-title">${message}</div>`}
+    </div>
+    <button class="toast-close" onclick="dismissToast('${id}')">✕</button>`;
+
+  // Điều chỉnh duration cho progress bar
+  el.style.setProperty("--toast-dur", duration + "ms");
+  const progressEl = el;
+  progressEl.addEventListener("animationend", e => {
+    if (e.animationName === "toastProgress") dismissToast(id);
+  });
+
+  container.appendChild(el);
+  dismissToast(id, duration);
+}
+window.showToast = showToast;
+
+function dismissToast(id, delay = 0) {
+  if (delay > 0) {
+    setTimeout(() => dismissToast(id), delay);
+    return;
+  }
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.animation = "toastSlideOut .3s ease forwards";
+  setTimeout(() => el.remove(), 290);
+}
+window.dismissToast = dismissToast;
+
+
+// ════════════════════════════════════════════
+//  CONFIRM MODAL
+// ════════════════════════════════════════════
+let _confirmResolve = null;
+
+/**
+ * confirmDialog({ title, message, icon, okText, okStyle })
+ * Trả về Promise<boolean>
+ * 
+ * Ví dụ:
+ *   const ok = await confirmDialog({ title: "Xoá bình luận?", okText: "Xoá" })
+ *   if (ok) { ... }
+ */
+function confirmDialog({ title = "Xác nhận", message = "Bạn chắc chắn?", icon = "⚠️",
+                         okText = "Xác nhận", okStyle = "danger" } = {}) {
+  return new Promise(resolve => {
+    _confirmResolve = resolve;
+
+    document.getElementById("confirmTitle").textContent = title;
+    document.getElementById("confirmMsg").textContent   = message;
+    document.getElementById("confirmIcon").textContent  = icon;
+    document.getElementById("confirmOkBtn").textContent = okText;
+
+    const okBtn = document.getElementById("confirmOkBtn");
+    okBtn.className = "confirm-btn ok" + (okStyle === "safe" ? " safe" : "");
+
+    document.getElementById("confirmOverlay").classList.add("open");
+    document.body.style.overflow = "hidden";
+  });
+}
+window.confirmDialog = confirmDialog;
+
+function resolveConfirm(result) {
+  document.getElementById("confirmOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+  if (_confirmResolve) { _confirmResolve(result); _confirmResolve = null; }
+}
+window.resolveConfirm = resolveConfirm;
+
+// Close on backdrop click
+document.getElementById("confirmOverlay")?.addEventListener("click", e => {
+  if (e.target.id === "confirmOverlay") resolveConfirm(false);
+});
+
+// ════════════════════════════════════════════
+//  Cách dùng trong admin.js — thay thế confirm() thông thường:
+//
+//  CŨ:   if (!confirm("Xoá bình luận?")) return;
+//        deleteComment(docId, cmtId)
+//
+//  MỚI:  const ok = await confirmDialog({
+//          title: "Xoá bình luận?",
+//          message: "Bình luận này sẽ bị xoá vĩnh viễn.",
+//          icon: "🗑️", okText: "Xoá", okStyle: "danger"
+//        });
+//        if (!ok) return;
+//        await deleteComment(docId, cmtId);
+//        showToast("🗑️ Đã xoá bình luận", "success");
+// ════════════════════════════════════════════
+</script>

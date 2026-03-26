@@ -1,0 +1,388 @@
+<!-- ============================================================
+  CHỨC NĂNG 1: LOGIN / REGISTER
+  ============================================================
+  📁 HƯỚNG DẪN THÊM VÀO:
+  
+  1. client/client.html
+     → Copy phần HTML bên dưới vào TRƯỚC thẻ đóng </body>
+     → Thêm nút login vào header (xem phần HEADER BUTTON)
+  
+  2. client/client.css
+     → Copy phần CSS vào CUỐI FILE client.css
+  
+  3. client/client.js
+     → Copy phần JS vào CUỐI FILE client.js
+  ============================================================ -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN A — THÊM NÚT LOGIN VÀO HEADER
+  📁 client/client.html
+  Tìm dòng:  <a href="index.html" target="_blank" class="admin-link">Admin ↗</a>
+  Thêm TRƯỚC dòng đó:
+══════════════════════════════════════════════════════════ -->
+
+<!-- [HEADER BUTTON - thêm vào trước admin-link] -->
+<div class="auth-header-zone" id="authHeaderZone">
+  <!-- Khi chưa đăng nhập -->
+  <button class="btn-login-header" id="btnLoginHeader" onclick="openAuthModal('login')">
+    Đăng nhập
+  </button>
+  <!-- Khi đã đăng nhập — ẩn mặc định, JS sẽ hiện -->
+  <div class="user-chip" id="userChip" style="display:none">
+    <div class="uchip-avatar" id="uChipAvatar">U</div>
+    <span class="uchip-name" id="uChipName">User</span>
+    <button class="uchip-logout" onclick="handleLogout()" title="Đăng xuất">⏏</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN B — MODAL HTML
+  📁 client/client.html
+  Thêm TRƯỚC thẻ đóng </body>
+══════════════════════════════════════════════════════════ -->
+
+<!-- AUTH MODAL -->
+<div class="auth-overlay" id="authOverlay" onclick="handleAuthOverlayClick(event)">
+  <div class="auth-modal" id="authModal">
+
+    <!-- Tab switcher -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Đăng nhập</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Đăng ký</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="auth-form" id="formLogin">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">⚡</div>
+        <div class="auth-logo-text">DocVault</div>
+      </div>
+      <h2 class="auth-title">Chào mừng trở lại</h2>
+      <p class="auth-sub">Đăng nhập để bình luận & tương tác</p>
+
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <div class="pw-wrap">
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+          <button type="button" class="pw-toggle" onclick="togglePw('loginPassword',this)">👁</button>
+        </div>
+      </div>
+      <div class="auth-error" id="loginError"></div>
+      <button class="auth-submit" id="btnLogin" onclick="handleLogin()">
+        <span>Đăng nhập</span>
+      </button>
+      <p class="auth-switch">Chưa có tài khoản? <a onclick="switchAuthTab('register')">Đăng ký ngay</a></p>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="auth-form" id="formRegister" style="display:none">
+      <div class="auth-logo">
+        <div class="auth-logo-icon">⚡</div>
+        <div class="auth-logo-text">DocVault</div>
+      </div>
+      <h2 class="auth-title">Tạo tài khoản mới</h2>
+      <p class="auth-sub">Tham gia cộng đồng DocVault</p>
+
+      <div class="auth-field">
+        <label>Tên hiển thị</label>
+        <input type="text" id="regName" placeholder="Nguyễn Văn A" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Mật khẩu</label>
+        <div class="pw-wrap">
+          <input type="password" id="regPassword" placeholder="Ít nhất 6 ký tự" autocomplete="new-password">
+          <button type="button" class="pw-toggle" onclick="togglePw('regPassword',this)">👁</button>
+        </div>
+      </div>
+      <div class="auth-error" id="registerError"></div>
+      <button class="auth-submit" id="btnRegister" onclick="handleRegister()">
+        <span>Tạo tài khoản</span>
+      </button>
+      <p class="auth-switch">Đã có tài khoản? <a onclick="switchAuthTab('login')">Đăng nhập</a></p>
+    </div>
+
+    <button class="auth-close" onclick="closeAuthModal()">✕</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN C — CSS
+  📁 client/client.css  →  Thêm vào CUỐI FILE
+══════════════════════════════════════════════════════════ -->
+<style id="auth-css-preview">
+/* ── Auth Header Zone ── */
+.auth-header-zone { display:flex; align-items:center; gap:10px; }
+
+.btn-login-header {
+  padding: 7px 16px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  border: none; color: #fff; font-family: inherit;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all .2s; box-shadow: 0 4px 14px rgba(108,92,231,.3);
+}
+.btn-login-header:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,92,231,.45); }
+
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.05); border: 1px solid var(--bdr);
+  border-radius: 20px; padding: 5px 12px 5px 5px;
+}
+.uchip-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.uchip-name { font-size: 13px; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uchip-logout { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px; transition: color .15s; }
+.uchip-logout:hover { color: var(--acc2); }
+
+/* ── Auth Overlay ── */
+.auth-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.75); backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none;
+  transition: opacity .25s ease;
+}
+.auth-overlay.open { opacity: 1; pointer-events: all; }
+
+/* ── Auth Modal ── */
+.auth-modal {
+  background: var(--s1); border: 1px solid var(--bdr);
+  border-radius: 20px; width: 100%; max-width: 420px;
+  position: relative; overflow: hidden;
+  transform: translateY(20px) scale(.97);
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  box-shadow: 0 32px 80px rgba(0,0,0,.7);
+}
+.auth-modal::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--acc), var(--acc2), var(--acc3));
+}
+.auth-overlay.open .auth-modal { transform: translateY(0) scale(1); }
+
+.auth-tabs {
+  display: flex; border-bottom: 1px solid var(--bdr);
+}
+.auth-tab {
+  flex: 1; padding: 14px; background: none; border: none;
+  color: var(--muted); font-family: inherit; font-size: 13.5px;
+  font-weight: 500; cursor: pointer; transition: all .15s;
+}
+.auth-tab.active { color: var(--text); background: rgba(108,92,231,.08); }
+.auth-tab:hover:not(.active) { background: rgba(255,255,255,.03); }
+
+.auth-form { padding: 28px 28px 24px; }
+.auth-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.auth-logo-icon {
+  width: 34px; height: 34px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--acc), var(--acc2));
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+.auth-logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 17px; }
+.auth-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+
+.auth-field { margin-bottom: 14px; }
+.auth-field label { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; letter-spacing: .3px; }
+.auth-field input {
+  width: 100%; background: var(--s2); border: 1px solid var(--bdr);
+  border-radius: 9px; padding: 10px 13px; color: var(--text);
+  font-family: inherit; font-size: 14px; outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.auth-field input:focus { border-color: rgba(108,92,231,.5); box-shadow: 0 0 0 3px rgba(108,92,231,.1); }
+
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 40px; }
+.pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: var(--muted); }
+
+.auth-error { font-size: 12.5px; color: #ff6b6b; background: rgba(255,107,107,.1); border: 1px solid rgba(255,107,107,.2); border-radius: 7px; padding: 8px 12px; margin-bottom: 12px; display: none; }
+.auth-error.show { display: block; animation: shakeX .4s ease; }
+@keyframes shakeX { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+.auth-submit {
+  width: 100%; padding: 13px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, var(--acc), #8c84ff);
+  color: #fff; font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all .2s; position: relative;
+  box-shadow: 0 4px 16px rgba(108,92,231,.35);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.auth-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(108,92,231,.5); }
+.auth-submit.loading span { opacity: 0; }
+.auth-submit.loading::after {
+  content: ''; position: absolute; width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .6s linear infinite;
+}
+
+.auth-switch { font-size: 12.5px; color: var(--muted); text-align: center; margin-top: 16px; }
+.auth-switch a { color: var(--acc); cursor: pointer; text-decoration: underline; }
+.auth-close {
+  position: absolute; top: 14px; right: 14px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--s3); border: 1px solid var(--bdr);
+  color: var(--muted); font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; z-index: 1;
+}
+.auth-close:hover { background: var(--s4); color: var(--text); }
+</style>
+
+
+<!-- ══════════════════════════════════════════════════════════
+  PHẦN D — JAVASCRIPT
+  📁 client/client.js  →  Thêm vào CUỐI FILE
+
+  ⚠ Phải thêm import này vào ĐẦU FILE client.js:
+  import { loginUser, registerUser, logoutUser, onAuthChange, currentUser } from "../shared/auth.js";
+══════════════════════════════════════════════════════════ -->
+<script id="auth-js-preview">
+// ════════════════════════════
+//  AUTH LOGIC  (thêm vào cuối client.js)
+// ════════════════════════════
+
+// Theo dõi trạng thái đăng nhập
+onAuthChange(user => {
+  const btnLogin = document.getElementById("btnLoginHeader");
+  const userChip = document.getElementById("userChip");
+  if (!btnLogin || !userChip) return;
+
+  if (user) {
+    btnLogin.style.display = "none";
+    userChip.style.display = "flex";
+    document.getElementById("uChipName").textContent = user.displayName || user.email.split("@")[0];
+    document.getElementById("uChipAvatar").textContent = (user.displayName || user.email)[0].toUpperCase();
+  } else {
+    btnLogin.style.display = "";
+    userChip.style.display = "none";
+  }
+});
+
+function openAuthModal(tab = "login") {
+  document.getElementById("authOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+  switchAuthTab(tab);
+}
+window.openAuthModal = openAuthModal;
+
+function closeAuthModal() {
+  document.getElementById("authOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+  clearAuthErrors();
+}
+window.closeAuthModal = closeAuthModal;
+
+function handleAuthOverlayClick(e) {
+  if (e.target === document.getElementById("authOverlay")) closeAuthModal();
+}
+window.handleAuthOverlayClick = handleAuthOverlayClick;
+
+function switchAuthTab(tab) {
+  document.getElementById("tabLogin").classList.toggle("active", tab === "login");
+  document.getElementById("tabRegister").classList.toggle("active", tab === "register");
+  document.getElementById("formLogin").style.display    = tab === "login"    ? "" : "none";
+  document.getElementById("formRegister").style.display = tab === "register" ? "" : "none";
+  clearAuthErrors();
+}
+window.switchAuthTab = switchAuthTab;
+
+async function handleLogin() {
+  const email = document.getElementById("loginEmail").value.trim();
+  const pw    = document.getElementById("loginPassword").value;
+  const btn   = document.getElementById("btnLogin");
+  const errEl = document.getElementById("loginError");
+  clearAuthErrors();
+
+  if (!email || !pw) { showAuthError(errEl, "Vui lòng điền đầy đủ thông tin"); return; }
+  btn.classList.add("loading"); btn.disabled = true;
+
+  try {
+    await loginUser(email, pw);
+    closeAuthModal();
+    showToast("✓ Đăng nhập thành công!", "success");
+  } catch (e) {
+    const msgs = {
+      "auth/user-not-found":  "Email không tồn tại",
+      "auth/wrong-password":  "Mật khẩu không đúng",
+      "auth/invalid-email":   "Email không hợp lệ",
+      "auth/too-many-requests":"Quá nhiều lần thử, thử lại sau",
+    };
+    showAuthError(errEl, msgs[e.code] || "Đăng nhập thất bại: " + e.message);
+  } finally { btn.classList.remove("loading"); btn.disabled = false; }
+}
+window.handleLogin = handleLogin;
+
+async function handleRegister() {
+  const name  = document.getElementById("regName").value.trim();
+  const email = document.getElementById("regEmail").value.trim();
+  const pw    = document.getElementById("regPassword").value;
+  const btn   = document.getElementById("btnRegister");
+  const errEl = document.getElementById("registerError");
+  clearAuthErrors();
+
+  if (!name || !email || !pw) { showAuthError(errEl, "Vui lòng điền đầy đủ thông tin"); return; }
+  if (pw.length < 6)          { showAuthError(errEl, "Mật khẩu phải ít nhất 6 ký tự"); return; }
+  btn.classList.add("loading"); btn.disabled = true;
+
+  try {
+    await registerUser(email, pw, name);
+    closeAuthModal();
+    showToast("✓ Tạo tài khoản thành công!", "success");
+  } catch (e) {
+    const msgs = {
+      "auth/email-already-in-use": "Email đã được sử dụng",
+      "auth/invalid-email":        "Email không hợp lệ",
+      "auth/weak-password":        "Mật khẩu quá yếu",
+    };
+    showAuthError(errEl, msgs[e.code] || "Đăng ký thất bại: " + e.message);
+  } finally { btn.classList.remove("loading"); btn.disabled = false; }
+}
+window.handleRegister = handleRegister;
+
+async function handleLogout() {
+  await logoutUser();
+  showToast("Đã đăng xuất", "info");
+}
+window.handleLogout = handleLogout;
+
+function showAuthError(el, msg) { el.textContent = msg; el.classList.add("show"); }
+function clearAuthErrors() {
+  ["loginError","registerError"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("show");
+  });
+}
+
+function togglePw(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const isText = input.type === "text";
+  input.type = isText ? "password" : "text";
+  btn.textContent = isText ? "👁" : "🙈";
+}
+window.togglePw = togglePw;
+
+// Enter key support
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    if (document.getElementById("formLogin")?.style.display !== "none" &&
+        document.getElementById("authOverlay")?.classList.contains("open")) {
+      handleLogin();
+    }
+  }
+  if (e.key === "Escape") closeAuthModal();
+});
+</script>

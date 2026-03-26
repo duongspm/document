@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocVault — Khám phá tài liệu</title>
+  <!-- <link rel="icon" href="gemini.svg" type="image/x-icon" /> -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg width='512' height='512' viewBox='0 0 512 512' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='512' height='512' rx='120' fill='%2305050A'/%3E%3Cpath d='M110 90H290C380 90 420 150 420 256C420 362 380 422 290 422H110V90Z' fill='%2305050A' stroke='%23FFFFFF' stroke-width='80' stroke-linejoin='round'/%3E%3Crect x='180' y='190' width='140' height='40' rx='10' fill='%236C5CE7'/%3E%3Crect x='180' y='255' width='100' height='40' rx='10' fill='%23FD79A8'/%3E%3Crect x='180' y='320' width='160' height='18' rx='5' fill='%23FFFFFF'/%3E%3Cpath d='M410 110L430 145L390 145L410 180' stroke='%23FFFFFF' stroke-width='15' stroke-linecap='round'/%3E%3C/svg%3E" />
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=Fira+Code:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="client.css" />
+  <link rel="stylesheet" href="animation.css" />
+</head>
+
+<body>
+  <div class="scroll-progress-container">
+    <div id="scrollBar" class="scroll-progress-bar"></div>
+  </div>
+  <!-- ═══ HERO NAV ═══ -->
+  <header class="site-header" id="siteHeader">
+    <div class="header-inner">
+      <a class="header-logo" href="#">
+        <div class="hl-icon">⚡</div>
+        <span class="hl-name">Doc<strong>Vault</strong></span>
+      </a>
+      <nav class="header-nav">
+        <a href="#" onclick="filterAll()">Tất cả</a>
+        <a href="#tag-bar">Theo tag</a>
+        <a href="admin.html" target="_blank" class="admin-link">Admin ↗</a>
+      </nav>
+      <button class="hamburger-client" id="mobileMenuBtn">☰</button>
+      <button id="themeToggle" class="theme-toggle-mini" aria-label="Toggle Theme">
+      <div class="sun-moon-container">
+        <div class="mode-icon"></div>
+      </div>
+      <span class="dot d1"></span>
+      <span class="dot d2"></span>
+    </button>
+    </div>
+  </header>
+
+  <!-- Mobile nav -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#" onclick="
+          filterAll();
+          closeMobileMenu();
+        ">Tất cả</a>
+    <a href="admin.html" target="_blank">Admin ↗</a>
+    <button class="mm-close" onclick="closeMobileMenu()">✕</button>
+  </div>
+
+  <!-- ═══ HERO SECTION ═══ -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-orb orb1"></div>
+      <div class="hero-orb orb2"></div>
+      <div class="hero-orb orb3"></div>
+    </div>
+    <div class="marquee-background">
+    <div class="marquee-content">
+      <span>DOCVAULT SYSTEM • OPEN SOURCE • KNOWLEDGE HUB • INNOVATION • </span>
+      <span>DOCVAULT SYSTEM • OPEN SOURCE • KNOWLEDGE HUB • INNOVATION • </span>
+    </div>
+  </div>
+    <div class="hero-content">
+      <div class="hero-badge">✦ Kho tài liệu mở</div>
+      <h1 class="hero-title">
+        Khám phá & học hỏi<br /><span class="gradient-text">từ kho tài liệu</span>
+      </h1>
+      <p class="hero-desc">
+        Tài liệu, hướng dẫn, snippet code và demo trực tiếp — tất cả trong một
+        nơi.
+      </p>
+      <div class="hero-search">
+        <span class="hs-icon">⌕</span>
+        <input type="text" id="heroSearch" placeholder="Tìm kiếm tài liệu, tag, loại..." autocomplete="off" />
+        <kbd>↵</kbd>
+      </div>
+      <div class="hero-stats" id="heroStats">
+        <span id="hs-total">— tài liệu</span>
+        <span class="hs-dot">·</span>
+        <span id="hs-tags">— tags</span>
+        <span class="hs-dot">·</span>
+        <span id="hs-demo">— có demo</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- <a class="btn-premium">
+<span class="btn-text">Khám phá ngay</span>
+<div class="btn-glow"></div>
+</a> -->
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <div class="site-body" id="siteBody">
+    <!-- Tag bar -->
+    <div class="tag-bar" id="tag-bar">
+      <div class="tag-bar-inner" id="tagBarInner">
+        <button class="tag-btn active" onclick="setClientFilter('all', this)">
+          ✦ Tất cả
+        </button>
+        
+      </div>
+    </div>
+
+    <!-- Docs grid -->
+    <div class="content-wrap">
+      <div class="results-info" id="resultsInfo"></div>
+      <div class="client-grid" id="clientGrid">
+        <div class="client-loading">
+          <div class="loader"></div>
+          <p>Đang tải tài liệu…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DOC DETAIL OVERLAY ═══ -->
+  <div class="detail-overlay" id="detailOverlay">
+    <div class="detail-panel" id="detailPanel">
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+      <div class="detail-scroll" id="detailScroll">
+        <div class="detail-loading">
+          <div class="loader"></div>
+          <p>Đang tải…</p>
+        </div>
+      </div>
+    </div>
+  </div>
+<section class="timeline-section">
+  <div class="timeline-header">
+    <span class="sub-title">Hành trình phát triển</span>
+    <h2 class="main-title">My Coding <span>Odyssey</span></h2>
+    <div class="header-line"></div>
+  </div>
+  <div class="timeline-container">
+    <div class="timeline-line">
+      <div id="timelineProgress" class="timeline-progress"></div>
+    </div>
+
+    <div class="timeline-item left">
+      <div class="timeline-dot">2018</div>
+      <div class="timeline-content">
+        <span class="category">Học sinh</span>
+        <h3>Bắt đầu bén duyên</h3>
+        <p>Tiếp cận với Pascal và những dòng code "Hello World" đầu tiên tại phòng máy trường cấp 3.</p>
+        <div class="tech-stack"><span>Pascal</span> <span>Algorithm</span></div>
+      </div>
+    </div>
+
+    <div class="timeline-item right">
+      <div class="timeline-dot">2021</div>
+      <div class="timeline-content">
+        <span class="category">Sinh viên</span>
+        <h3>Đại học & Web Dev</h3>
+        <p>Xây dựng website cá nhân đầu tiên. Khám phá sức mạnh của HTML, CSS và JavaScript.</p>
+        <div class="tech-stack"><span>HTML5</span> <span>CSS3</span> <span>JS</span></div>
+      </div>
+    </div>
+
+    <div class="timeline-item left">
+      <div class="timeline-dot">2024</div>
+      <div class="timeline-content">
+        <span class="category">Internship</span>
+        <h3>Va chạm thực tế</h3>
+        <p>Gia nhập đội ngũ phát triển tại doanh nghiệp, làm quen với Git, Agile và làm việc nhóm chuyên nghiệp.</p>
+        <div class="tech-stack"><span>React</span> <span>Git</span> <span>Firebase</span></div>
+      </div>
+    </div>
+
+    <div class="timeline-item right">
+      <div class="timeline-dot">2026</div>
+      <div class="timeline-content">
+        <span class="category">Developer</span>
+        <h3>Software Engineer</h3>
+        <p>Hiện tại đang tập trung xây dựng DocVault và các hệ sinh thái mã nguồn mở sáng tạo.</p>
+        <div class="tech-stack"><span>GSAP</span> <span>Node.js</span> <span>Fullstack</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="about-vault-section">
+  <div class="marquee-background">
+    <div class="marquee-content">
+      <span>DOCVAULT SYSTEM • OPEN SOURCE • KNOWLEDGE HUB • INNOVATION • </span>
+      <span>DOCVAULT SYSTEM • OPEN SOURCE • KNOWLEDGE HUB • INNOVATION • </span>
+    </div>
+  </div>
+  <div class="about-container">
+    
+    <div class="about-content">
+      <span class="badge-glitch">Since 2026</span>
+      <h2 class="about-title">Lưu trữ tri thức <br><span>Khai phóng sáng tạo</span></h2>
+      <p class="about-text">
+        DocVault không chỉ là một kho lưu trữ tài liệu. Đây là hệ sinh thái được thiết kế dành riêng cho các lập trình viên và những người yêu công nghệ, nơi mọi dòng mã và kiến thức đều được trân trọng và bảo mật tuyệt đối.
+      </p>
+      
+      <div class="about-features">
+        <div class="f-item">
+          <div class="f-icon">🚀</div>
+          <div><h4>Tốc độ tối ưu</h4><p>Truy xuất dữ liệu tức thì với Firebase.</p></div>
+        </div>
+        <div class="f-item">
+          <div class="f-icon">🛡️</div>
+          <div><h4>Bảo mật cao</h4><p>Mã hóa và phân quyền truy cập thông minh.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box purple">
+        <h3>500+</h3>
+        <p>Tài liệu mã nguồn</p>
+      </div>
+      <div class="stat-box dark">
+        <h3>99.9%</h3>
+        <p>Uptime hệ thống</p>
+      </div>
+      <div class="stat-box pink">
+        <h3>24/7</h3>
+        <p>Hỗ trợ kỹ thuật</p>
+      </div>
+      <div class="stat-box glass">
+        <div class="github-tag">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.792 24 17.292 24 12c0-6.627-5.373-12-12-12"/></svg>
+          Open Source
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+  <!-- ═══ FOOTER ═══ -->
+  <!-- <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <img src="gemini.svg" width="50" alt="" />
+        <span class="fl-icon">⚡</span>
+        <span>DocVault</span>
+      </div>
+      <p class="footer-text">Kho tài liệu được xây dựng với ❤️</p>
+    </div>
+  </footer> -->
+  <div id="scrollToTop" class="stt-container">
+  <svg class="stt-svg" width="50" height="50" viewBox="0 0 50 50">
+    <circle class="stt-base" cx="25" cy="25" r="20"></circle>
+    <circle id="sttProgress" class="stt-progress" cx="25" cy="25" r="20"></circle>
+  </svg>
+  <div class="stt-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+  </div>
+</div>
+  <footer class="modern-footer">
+    <div class="waves-container">
+    <svg class="waves" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+      <defs>
+        <path id="gentle-wave" d="M-160 44c30 0 58-18 88-18s 58 18 88 18 58-18 88-18 58 18 88 18 v44h-352z" />
+      </defs>
+      <g class="parallax">
+        <use xlink:href="#gentle-wave" x="48" y="0" fill="rgba(108, 92, 231, 0.3)" /> <use xlink:href="#gentle-wave" x="48" y="3" fill="rgba(253, 121, 168, 0.3)" /> <use xlink:href="#gentle-wave" x="48" y="5" fill="rgba(5, 5, 10, 0.5)" />     <use xlink:href="#gentle-wave" x="48" y="7" fill="#07070e" />                </g>
+    </svg>
+  </div>
+  <div class="footer-glow"></div>
+  <div class="footer-container">
+    
+    <div class="footer-col brand-col">
+      <div class="footer-logo">
+        <span class="logo-icon"><img src="gemini.svg" width="50" alt="" />⚡</span> Doc<span>Vault</span>
+      </div>
+      <p class="footer-desc">
+        Hệ thống quản lý tài liệu thông minh, tối ưu hóa quy trình làm việc và bảo mật dữ liệu tuyệt đối.
+      </p>
+      <div class="social-links">
+  <a href="#" class="social-btn" aria-label="Facebook">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
+  </a>
+  <a href="#" class="social-btn" aria-label="GitHub">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+  </a>
+  <a href="#" class="social-btn" aria-label="LinkedIn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+  </a>
+</div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Khám phá</h4>
+      <ul>
+        <li><a href="#">Tài liệu mới</a></li>
+        <li><a href="#">Hướng dẫn sử dụng</a></li>
+        <li><a href="#">Cộng đồng</a></li>
+        <li><a href="#">Bảng giá</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Hỗ trợ</h4>
+      <ul>
+        <li><a href="#">Trung tâm trợ giúp</a></li>
+        <li><a href="#">Điều khoản dịch vụ</a></li>
+        <li><a href="#">Chính sách bảo mật</a></li>
+        <li><a href="#">Liên hệ</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col newsletter-col">
+      <h4>Bản tin</h4>
+      <p>Nhận cập nhật mới nhất từ chúng tôi.</p>
+      <div class="subscribe-form">
+        <input type="email" placeholder="Email của bạn...">
+        <button type="submit">Gửi</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    <p>&copy; 2026 DocVault. Thiết kế bởi <span>YourName</span>. All rights reserved.</p>
+  </div>
+</footer>
+
+  <script type="module" src="client.js"></script>
+  <script src="animation.js"></script>
+</body>
+
+</html>
