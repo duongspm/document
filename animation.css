@@ -96,6 +96,11 @@ body.light-theme .hero-search input{
 body.light-theme .ce-title{
   color: #000;
 }
+body.light-theme .detail-hero,
+body.light-theme .detail-panel{
+  background: linear-gradient(135deg,rgba(255, 255, 255, 0.1),rgba(253,121,168,.07))rgba(255, 255, 255, .9);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
 @keyframes pulse {
   0% { transform: scale(1); opacity: 0.5; }
   50% { transform: scale(1.5); opacity: 1; }
