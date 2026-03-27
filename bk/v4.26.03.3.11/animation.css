@@ -101,30 +101,6 @@ body.light-theme .detail-panel{
   background: linear-gradient(135deg,rgba(255, 255, 255, 0.1),rgba(253,121,168,.07))rgba(255, 255, 255, .9);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
-body.light-theme .card-react-btn{
-  border: 1px solid #000;
-}
-body .comment-avatar{
-  background: linear-gradient(135deg, var(--acc), var(--acc2)) !important;
-}
-body.light-theme .comment-form-wrap{
-      background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-}
-body.light-theme .comment-input{
-    color: #475569;
-    background: #f8fafc;
-    border-radius: 12px;
-    border-left: 4px solid #e2e8f0;
-}
-.share-modal-title{
-  color: #fff;
-}
-body.light-theme .notif-header{
-  color: #fff;
-}
-
 @keyframes pulse {
   0% { transform: scale(1); opacity: 0.5; }
   50% { transform: scale(1.5); opacity: 1; }
@@ -494,7 +470,7 @@ header {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 99;
+  z-index: 999;
   opacity: 0;
   visibility: hidden;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -927,68 +903,3 @@ body.light-theme .main-title {
 body.light-theme .marquee-background {
   opacity: 0.2;
 }
-
-.fb-modal {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
-  display: flex; /* Dùng flex để căn giữa */
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  
-  /* Hiệu ứng ẩn/hiện bằng CSS */
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease-in-out;
-}
-
-/* Khi modal có class .active */
-.fb-modal.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.fb-content {
-  background: #fff;
-  width: 90%;
-  max-width: 400px;
-  border-radius: 18px;
-  padding: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  
-  /* Hiệu ứng trượt nhẹ từ dưới lên */
-  transform: translateY(20px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.fb-modal.active .fb-content {
-  transform: translateY(0) scale(1);
-}
-
-/* UI các phần tử bên trong */
-.fb-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.fb-header h4 { margin: 0; color: #333; }
-.fb-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #aaa; }
-
-#fbInput {
-  width: 100%; height: 100px; border: 1px solid #ddd; border-radius: 10px;
-  padding: 12px; font-size: 14px; outline: none; resize: none; box-sizing: border-box;
-  transition: border-color 0.2s;
-}
-#fbInput:focus { border-color: #6c5ce7; }
-
-.fb-footer { display: flex; gap: 10px; margin-top: 18px; }
-.fb-footer button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-
-.fb-btn-cancel { background: #f1f2f6; color: #555; }
-.fb-btn-send { background: #6c5ce7; color: #fff; transition: background 0.2s; }
-.fb-btn-send:hover { background: #5b4cc4; }
-.fb-btn-send:disabled { background: #a29bfe; cursor: not-allowed; }
-.fb-user-info { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
-.fb-row { display: flex; gap: 8px; }
-.fb-user-info input {
-  padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; outline: none; flex: 1;
-}
-.fb-user-info input:focus { border-color: #6c5ce7; }

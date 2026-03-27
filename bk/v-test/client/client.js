@@ -9,11 +9,11 @@ import {
   addComment, listenComments, toggleCommentLike, getCommentLiked,
   updateCommentCount, addNotification,
   listenNotifications, markNotifRead, COL
-} from "./connection.js";
-import { toast }                                     from "./toast.js";
+} from "../shared/firebase.js";
+import { toast }                                     from "../shared/toast.js";
 import { escHtml, parseTags, formatDate, timeAgo,
          getAnonUser, renderMarkdown, getTypeMeta,
-         debounce, copyToClipboard, buildSrcdoc }     from "./utils.js";
+         debounce, copyToClipboard, buildSrcdoc }     from "../shared/utils.js";
 
 // ── State ────────────────────────────────────────────────────
 let allDocs        = [];
@@ -399,7 +399,7 @@ function buildDetailDemo(doc) {
   const j = escHtml(doc.codeJs   || "");
 
   return `
-  <div class="detail-demo">
+  <div class="detail-demo" style="margin:0 32px 20px">
     <div class="dd-header">
       <div class="dd-title">▶ LIVE DEMO</div>
       <div class="dd-tabs">
@@ -413,16 +413,16 @@ function buildDetailDemo(doc) {
       <iframe class="dd-frame" id="detailFrame" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
     <div class="dd-pane" id="dd-html">
-    <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeHtml||'')))}')">📋 Copy HTML</button>
       <pre class="dd-code">${h || "<!-- Không có HTML -->"}</pre>
+      <button class="dd-copy" onclick="ddCopy(${JSON.stringify(doc.codeHtml||'')})">📋 Copy HTML</button>
     </div>
     <div class="dd-pane" id="dd-css">
-    <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeCss||'')))}')">📋 Copy CSS</button>
       <pre class="dd-code">${c || "/* Không có CSS */"}</pre>
+      <button class="dd-copy" onclick="ddCopy(${JSON.stringify(doc.codeCss||'')})">📋 Copy CSS</button>
     </div>
     <div class="dd-pane" id="dd-js">
-    <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeJs||'')))}')">📋 Copy JS</button>
       <pre class="dd-code">${j || "// Không có JS"}</pre>
+      <button class="dd-copy" onclick="ddCopy(${JSON.stringify(doc.codeJs||'')})">📋 Copy JS</button>
     </div>
   </div>`;
 }
@@ -445,46 +445,13 @@ function switchDDTab(e, paneId) {
 }
 window.switchDDTab = switchDDTab;
 
-// function ddCopy(b64) {
-//   try {
-//     const text = decodeURIComponent(escape(atob(b64)));
-//     navigator.clipboard.writeText(text).then(() => showFloatToast("✅ Đã copy!"));
-//   } catch { showFloatToast("❌ Không copy được"); }
-// }
-// window.ddCopy = ddCopy;
-// Đảm bảo đầu file client.js đã có: import { toast } from "./toast.js";
-
-async function ddCopy(b64) {
-  // BƯỚC 1: Kiểm tra xem tham số truyền vào có rỗng không
-  if (!b64 || b64 === "''" || b64 === "") {
-    toast.error("❌ Không có nội dung để copy!");
-    return; // Dừng hàm tại đây
-  }
-  try {
-    if (!b64) return;
-    
-    // Giải mã Base64 sang UTF-8 (Tiếng Việt)
-    const text = decodeURIComponent(escape(atob(b64)));
-    
-    // Sử dụng navigator.clipboard
-    await navigator.clipboard.writeText(text);
-    
-
-    // SỬA TẠI ĐÂY: Thay showFloatToast bằng toast.success
-    if (typeof toast !== 'undefined') {
-      toast.success("✅ Đã copy mã!");
-    } else {
-      console.log("Đã copy:", text);
-    }
-  } catch (err) {
-    console.error("Copy error:", err);
-    // Thay showFloatToast bằng toast.error
-    if (typeof toast !== 'undefined') {
-      toast.error("❌ Không thể copy");
-    }
-  }
+async function ddCopy(text) {
+  const ok = await copyToClipboard(text);
+  if (ok) toast.success("Đã copy! 📋");
+  else    toast.error("Không thể copy");
 }
 window.ddCopy = ddCopy;
+
 // ── COMMENTS ─────────────────────────────────────────────────
 
 // Form bình luận
@@ -524,263 +491,186 @@ function editUsername() {
 }
 window.editUsername = editUsername;
 
-//đầu viết lại
-// ============================================================
-//  SECTION: COMMENTS SYSTEM (THREADED) - ĐÃ ĐỒNG NHẤT BIẾN
-// ============================================================
+// Submit comment chính
+async function submitComment() {
+  const input = document.getElementById("commentInput");
+  const text  = input?.value.trim();
+  if (!text) { toast.warn("Vui lòng nhập nội dung bình luận"); return; }
+  if (!currentDocId) return;
 
-// 1. Khởi tạo listener (Đảm bảo gọi hàm này trong openDetail)
+  const btn = document.getElementById("postCommentBtn");
+  btn.disabled = true; btn.textContent = "Đang đăng…";
+
+  try {
+    await addComment({
+      docId:    currentDocId,
+      parentId: null,
+      text,
+      userId:   anonUser.id,
+      userName: anonUser.name,
+      userColor: anonUser.color,
+      userAvatar: anonUser.avatar,
+    });
+    await updateCommentCount(currentDocId, 1);
+    input.value = "";
+    toast.success("Bình luận đã được đăng ✓");
+
+    // Gửi notification
+    await addNotification({
+      type:    "new_comment",
+      title:   "Bình luận mới",
+      body:    `${anonUser.name} đã bình luận`,
+      docId:   currentDocId,
+    }).catch(() => {});
+  } catch (e) {
+    toast.error("Lỗi ✗", "Không thể đăng bình luận: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "💬 Đăng bình luận";
+  }
+}
+window.submitComment = submitComment;
+
+// Submit reply
+async function submitReply(parentId, docId) {
+  const input = document.getElementById(`replyInput_${parentId}`);
+  const text  = input?.value.trim();
+  if (!text) { toast.warn("Vui lòng nhập nội dung phản hồi"); return; }
+
+  const btn = document.getElementById(`replyBtn_${parentId}`);
+  if (btn) { btn.disabled = true; btn.textContent = "Đang gửi…"; }
+
+  try {
+    await addComment({
+      docId,
+      parentId,
+      text,
+      userId:    anonUser.id,
+      userName:  anonUser.name,
+      userColor: anonUser.color,
+      userAvatar: anonUser.avatar,
+    });
+    await updateCommentCount(docId, 1);
+    input.value = "";
+    closeReplyForm(parentId);
+    toast.success("Đã phản hồi ✓");
+
+    // Notification cho chủ thread
+    await addNotification({
+      type:    "reply",
+      title:   "Có người phản hồi bình luận",
+      body:    `${anonUser.name} đã phản hồi`,
+      docId,   parentId,
+    }).catch(() => {});
+  } catch (e) {
+    toast.error("Lỗi", e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Phản hồi"; }
+  }
+}
+window.submitReply = submitReply;
+
+// Realtime comment listener
 function startCommentListener(docId) {
-  if (commentUnsub) commentUnsub(); 
-
-  commentUnsub = listenComments(docId, (comments) => {
-    try {
-      // Cập nhật số lượng trên Badge
-      const badge = document.getElementById("commentCountBadge");
-      if (badge) badge.textContent = comments.length;
-
-      // Gọi hàm render danh sách
-      renderComments(comments, docId);
-    } catch (err) {
-      console.error("Lỗi khi xử lý dữ liệu comment:", err);
-    }
+  if (commentUnsub) commentUnsub();
+  commentUnsub = listenComments(docId, comments => {
+    renderComments(comments, docId);
+    // Cập nhật badge số lượng
+    const badge = document.getElementById("commentCountBadge");
+    if (badge) badge.textContent = comments.length;
   });
 }
-window.startCommentListener = startCommentListener;
 
-// 2. Hàm render chính (Dùng ID commentsList)
+// Render toàn bộ comments (threaded)
 function renderComments(comments, docId) {
-  const list = document.getElementById("commentsList");
+  const list    = document.getElementById("commentsList");
   if (!list) return;
 
-  // Tách Cha (parentId null) và Con
-  const roots = comments.filter(c => !c.parentId);
-  const allReplies = comments.filter(c => c.parentId);
+  const roots   = comments.filter(c => !c.parentId);
+  const replies = comments.filter(c =>  c.parentId);
 
   if (roots.length === 0) {
     list.innerHTML = `<div class="no-comments">Chưa có bình luận nào. Hãy là người đầu tiên! 🎉</div>`;
     return;
   }
 
-  // Sắp xếp: Mới nhất lên đầu
-  roots.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-  // Render logic lồng nhau
-  list.innerHTML = roots.map(root => {
-    const directReplies = allReplies.filter(r => r.parentId === root.id);
-    return commentItemHTML(root, docId, directReplies);
+  list.innerHTML = roots.map(c => {
+    const childReplies = replies.filter(r => r.parentId === c.id);
+    return commentItemHTML(c, docId, childReplies, replies);
   }).join("");
 }
 
-// viet lại 3:02
-// 3. Hàm tạo HTML cho bình luận cha
-// 3. Hàm tạo HTML cho bình luận cha
-// 3. Hàm tạo HTML cho bình luận cha
-// 3. Hàm tạo HTML cho bình luận cha
-/* <div class="comment-body-text" id="text-${cmt.id}">${escHtml(cmt.text)}</div> */
-// 3. Hàm tạo HTML cho bình luận CHA
-// 3. Hàm tạo HTML cho bình luận CHA
-function commentItemHTML(cmt, docId, directReplies = []) {
-  const liked = getCommentLiked(cmt.id);
-  const safeName = escHtml(cmt.userName || "Ẩn danh");
-  const avatar = escHtml(cmt.userAvatar || safeName.slice(0, 2)).toUpperCase();
+function commentItemHTML(cmt, docId, directReplies = [], allReplies = []) {
+  const liked   = getCommentLiked(cmt.id);
+  const replyCount = countAllReplies(cmt.id, allReplies);
 
   return `
-  <div class="comment-item" id="cmt-${cmt.id}" style="margin-bottom: 20px;">
-    <div class="comment-main-content">
-      <div class="comment-header">
-        <div class="comment-avatar" style="background:${cmt.userColor || '#6c5ce7'}">${avatar}</div>
-        <span class="comment-username-text">${safeName}</span>
-        <span class="cmt-time">${timeAgo(cmt.createdAt)}</span>
+  <div class="comment-item" id="cmt-${cmt.id}">
+    <div class="comment-header">
+      <div class="comment-avatar" style="background:${cmt.userColor||'#6c5ce7'};width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0">
+        ${escHtml(cmt.userAvatar||cmt.userName?.slice(0,2)||"?")}
       </div>
-      <div class="comment-body-text" id="text-${cmt.id}">${escHtml(cmt.text)}</div>
-      <div class="comment-actions">
-        <button class="cmt-action-btn ${liked ? "liked" : ""}" onclick="likeCmt('${cmt.id}', this)">
-          👍 <span>${cmt.likes || 0}</span>
-        </button>
-        <button class="cmt-action-btn" onclick="toggleReplyForm('${cmt.id}', '${safeName}')">
-          💬 Phản hồi
-        </button>
-      </div>
+      <span style="font-size:13px;font-weight:600">${escHtml(cmt.userName||"Ẩn danh")}</span>
+      ${cmt.flagged ? `<span class="flagged-badge">⚠ Bị gắn cờ</span>` : ""}
+      <span class="cmt-time">${timeAgo(cmt.createdAt)}</span>
+    </div>
+    <div class="comment-body-text">${escHtml(cmt.text)}</div>
+    <div class="comment-actions">
+      <button class="cmt-action-btn ${liked?"liked":""}" onclick="likeCmt('${cmt.id}',this)">
+        👍 <span>${cmt.likes||0}</span>
+      </button>
+      <button class="cmt-action-btn" onclick="toggleReplyForm('${cmt.id}','${docId}')">
+        💬 Phản hồi
+      </button>
+      ${replyCount > 0 ? `<button class="show-replies-btn" onclick="toggleReplies('${cmt.id}')">
+        ${replyCount} phản hồi ▾
+      </button>` : ""}
     </div>
 
-    <div class="reply-form" id="replyForm_${cmt.id}" style="display:none; margin-top:10px; margin-left:40px;">
-      <div id="quoteContext_${cmt.id}"></div> 
-      <textarea class="reply-input" id="replyInput_${cmt.id}" placeholder="Trả lời ${safeName}..."></textarea>
+    <!-- Reply form (ẩn mặc định) -->
+    <div class="reply-form" id="replyForm_${cmt.id}" style="display:none">
+      <textarea class="reply-input" id="replyInput_${cmt.id}"
+        placeholder="Phản hồi ${escHtml(cmt.userName)}…" rows="2" maxlength="1000"></textarea>
       <div class="reply-form-actions">
-        <button class="btn-cancel" onclick="closeReplyForm('${cmt.id}')">Huỷ</button>
-        <button class="btn-submit" id="replyBtn_${cmt.id}" onclick="submitReply('${cmt.id}', '${docId}', '${cmt.id}')">Gửi</button>
+        <button class="btn-reply-cancel" onclick="closeReplyForm('${cmt.id}')">Huỷ</button>
+        <button class="btn-reply-submit" id="replyBtn_${cmt.id}"
+          onclick="submitReply('${cmt.id}','${docId}')">Phản hồi</button>
       </div>
     </div>
 
+    <!-- Replies (ẩn mặc định nếu có nhiều) -->
     ${directReplies.length > 0 ? `
-    <div class="replies-container" style="margin-left:40px; border-left: 2px solid #eee; padding-left: 15px;">
-      ${directReplies.map(reply => subReplyHTML(reply, docId, cmt.id)).join("")}
+    <div class="replies-container" id="replies_${cmt.id}" style="${directReplies.length > 2 ? "display:none" : ""}">
+      ${directReplies.map(r => replyItemHTML(r, docId, cmt.id)).join("")}
     </div>` : ""}
   </div>`;
 }
 
-// 4. Hàm cho bình luận CON
-function subReplyHTML(cmt, docId, parentId) {
-  const safeName = escHtml(cmt.userName || "Ẩn danh");
+function replyItemHTML(cmt, docId, parentId) {
   const liked = getCommentLiked(cmt.id);
-  
   return `
-  <div class="comment-item sub-reply" id="cmt-${cmt.id}" style="margin-top:10px;">
+  <div class="comment-item" id="cmt-${cmt.id}" style="padding:10px 0">
     <div class="comment-header">
-      <div class="comment-avatar small" style="background:${cmt.userColor || '#6c5ce7'}">
-        ${escHtml(cmt.userAvatar || "?").toUpperCase()}
+      <div class="comment-avatar" style="background:${cmt.userColor||'#6c5ce7'};width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0">
+        ${escHtml(cmt.userAvatar||cmt.userName?.slice(0,2)||"?")}
       </div>
-      <span class="comment-username-text small">${safeName}</span>
+      <span style="font-size:12.5px;font-weight:600">${escHtml(cmt.userName||"Ẩn danh")}</span>
       <span class="cmt-time">${timeAgo(cmt.createdAt)}</span>
     </div>
-    <div class="comment-body-text small" id="text-${cmt.id}">${escHtml(cmt.text)}</div>
+    <div class="comment-body-text" style="font-size:13px">${escHtml(cmt.text)}</div>
     <div class="comment-actions">
-      <button class="cmt-action-btn ${liked ? "liked" : ""}" onclick="likeCmt('${cmt.id}', this)">
-        👍 <span>${cmt.likes || 0}</span>
+      <button class="cmt-action-btn ${liked?"liked":""}" onclick="likeCmt('${cmt.id}',this)">
+        👍 <span>${cmt.likes||0}</span>
       </button>
-      <button class="cmt-action-btn" onclick="toggleReplyForm('${cmt.id}', '${safeName}')">
+      <button class="cmt-action-btn" onclick="toggleReplyForm('${parentId}','${docId}')">
         💬 Phản hồi
       </button>
     </div>
-
-    <div class="reply-form" id="replyForm_${cmt.id}" style="display:none; margin-top:10px;">
-      <div id="quoteContext_${cmt.id}"></div> 
-      <textarea class="reply-input" id="replyInput_${cmt.id}" placeholder="Trả lời ${safeName}..."></textarea>
-      <div class="reply-form-actions">
-        <button class="btn-cancel" onclick="closeReplyForm('${cmt.id}')">Huỷ</button>
-        <button class="btn-submit" id="replyBtn_${cmt.id}" onclick="submitReply('${cmt.id}', '${docId}', '${parentId}')">Gửi</button>
-      </div>
-    </div>
   </div>`;
 }
-// 306
-// 5. Các hàm hỗ trợ UI
-// Hàm đóng/mở form và xử lý TRÍCH DẪN nội dung
-// 5. Các hàm hỗ trợ UI
-window.toggleReplyForm = (cmtId, userName) => {
-  const form = document.getElementById(`replyForm_${cmtId}`);
-  const quoteArea = document.getElementById(`quoteContext_${cmtId}`);
-  
-  // Tìm thẻ chứa nội dung dựa trên cmtId vừa bấm
-  const sourceElement = document.getElementById(`text-${cmtId}`);
-  const sourceText = sourceElement ? sourceElement.innerText.trim() : "";
 
-  if (form) {
-    if (form.style.display === "none") {
-      // Đóng tất cả các form đang mở khác cho đỡ rối
-      document.querySelectorAll('.reply-form').forEach(f => f.style.display = 'none');
-      
-      // BƠM NỘI DUNG TRÍCH DẪN VÀO ĐÚNG KHUNG CỦA FORM ĐANG MỞ
-      if (quoteArea) {
-        quoteArea.innerHTML = `
-          <div class="reply-quote-box" style="background: rgba(108, 92, 231, 0.08); border-left: 4px solid #6c5ce7; padding: 10px; margin-bottom: 10px; border-radius: 6px;">
-            <span class="quote-user-name" style="font-weight: bold; color: #6c5ce7; display: block; font-size: 11px;">@${userName}</span>
-            <div class="quote-text-content" style="font-style: italic; color: #555; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              "${sourceText}"
-            </div>
-          </div>
-        `;
-      }
-      
-      form.style.display = "block";
-      const textarea = form.querySelector('textarea');
-      if (textarea) textarea.focus();
-    } else {
-      form.style.display = "none";
-      if (quoteArea) quoteArea.innerHTML = "";
-    }
-  }
-};
-
-window.closeReplyForm = (id) => {
-  const f = document.getElementById(`replyForm_${id}`);
-  const q = document.getElementById(`quoteContext_${id}`);
-  if (f) f.style.display = "none";
-  if (q) q.innerHTML = ""; // Xóa nội dung khi đóng cho sạch
-};
-async function submitComment() {
-  const input = document.getElementById("commentInput");
-  const text = input?.value.trim();
-  if (!text) { toast.warn("Vui lòng nhập nội dung bình luận"); return; }
-  if (!currentDocId) return;
-
-  const btn = document.getElementById("postCommentBtn");
-  if (btn) { btn.disabled = true; btn.textContent = "Đang đăng…"; }
-
-  try {
-    await addComment({
-      docId: currentDocId, parentId: null, text,
-      userId: anonUser.id, userName: anonUser.name,
-      userColor: anonUser.color, userAvatar: anonUser.avatar,
-    });
-    await updateCommentCount(currentDocId, 1);
-    input.value = "";
-    toast.success("Bình luận đã được đăng ✓");
-    
-    await addNotification({
-      type: "new_comment", title: "Bình luận mới",
-      body: `${anonUser.name} đã bình luận`, docId: currentDocId,
-    }).catch(() => {});
-  } catch (e) {
-    toast.error("Lỗi ✗", e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "💬 Đăng bình luận"; }
-  }
+function countAllReplies(cmtId, allReplies) {
+  return allReplies.filter(r => r.parentId === cmtId).length;
 }
-window.submitComment = submitComment;
-// 3:18
-async function submitReply(currentCmtId, docId, firebaseParentId) {
-  const input = document.getElementById(`replyInput_${currentCmtId}`);
-  const quoteArea = document.getElementById(`quoteContext_${currentCmtId}`);
-  let text = input?.value.trim();
-
-  if (!text) {
-    toast.warn("Vui lòng nhập nội dung phản hồi");
-    return;
-  }
-
-  // Lấy text trích dẫn đang hiển thị trong UI (nếu có)
-  const quoteTextElement = quoteArea?.querySelector('.quote-text-content'); // Thêm class này vào toggleReplyForm bên dưới
-  const quoteUserElement = quoteArea?.querySelector('.quote-user-name');
-  
-  if (quoteTextElement && quoteUserElement) {
-    const qUser = quoteUserElement.innerText.replace('@', '');
-    const qText = quoteTextElement.innerText.replace(/"/g, '');
-    // Đóng gói trích dẫn vào nội dung theo định dạng riêng
-    text = `[[quote]]${qUser}|${qText}[[endquote]]\n${text}`;
-  }
-
-  const btn = document.getElementById(`replyBtn_${currentCmtId}`);
-  if (btn) { btn.disabled = true; btn.textContent = "Đang gửi..."; }
-
-  try {
-    await addComment({
-      docId,
-      parentId: firebaseParentId, // Vẫn giữ cấu trúc 2 tầng (cha - con)
-      text: text, 
-      userId: anonUser.id,
-      userName: anonUser.name,
-      userColor: anonUser.color,
-      userAvatar: anonUser.avatar,
-      createdAt: Date.now()
-    });
-
-    await updateCommentCount(docId, 1);
-    input.value = "";
-    closeReplyForm(currentCmtId);
-    toast.success("Đã gửi phản hồi!");
-  } catch (e) {
-    toast.error("Lỗi gửi phản hồi: " + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = "Gửi"; }
-  }
-}
-
-// 3:18
-window.submitReply = submitReply;
-//cuối viết lại
-// comment
 
 function toggleReplyForm(parentId, docId) {
   const form = document.getElementById(`replyForm_${parentId}`);
@@ -915,65 +805,20 @@ function toggleFab() {
   document.getElementById("fabMenu").classList.toggle("open", fabOpen);
 }
 window.toggleFab = toggleFab;
+
 function openFeedback() {
-  if (typeof toggleFab === "function") toggleFab(); // Đóng menu nếu đang mở
-  
-  const modal = document.getElementById('feedbackModal');
-  const input = document.getElementById('fbInput');
-  
-  modal.classList.add('active');
-  input.focus();
-}
-function closeFeedback() {
-  const modal = document.getElementById('feedbackModal');
-  modal.classList.remove('active');
-}
-async function processFeedback() {
-  const name = document.getElementById('fbName').value.trim();
-  const email = document.getElementById('fbEmail').value.trim();
-  const phone = document.getElementById('fbPhone').value.trim();
-  const msg = document.getElementById('fbInput').value.trim();
-  const btn = document.getElementById('btnSendFb');
-
-  if (!msg || !name) {
-    toast.warn("Vui lòng nhập tên và nội dung góp ý!");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Đang gửi...";
-
-  try {
-    await addNotification({
-      type: "feedback",
-      title: `Góp ý từ ${name}`,
-      body: msg,
-      userContact: { name, email, phone }, // Thêm metadata liên lạc
-      createdAt: Date.now(),
-      status: "unread"
-    });
-
+  toggleFab();
+  const msg = prompt("💬 Góp ý của bạn về DocVault:");
+  if (msg?.trim()) {
+    addNotification({
+      type:  "feedback",
+      title: "Góp ý từ người dùng",
+      body:  msg.trim().slice(0, 300),
+    }).catch(() => {});
     toast.success("Cảm ơn góp ý của bạn! 🙏");
-    // Reset form
-    document.getElementById('fbName').value = "";
-    document.getElementById('fbEmail').value = "";
-    document.getElementById('fbPhone').value = "";
-    document.getElementById('fbInput').value = "";
-    closeFeedback();
-    
-    // Nếu có hàm rung chuông ở admin (thông qua realtime)
-    if (typeof refreshAdminNotif === "function") refreshAdminNotif();
-  } catch (e) {
-    toast.error("Lỗi gửi góp ý!");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Gửi góp ý";
   }
 }
-// Gán lại hàm vào window
 window.openFeedback = openFeedback;
-window.closeFeedback = closeFeedback;
-window.processFeedback = processFeedback;
 
 // ── Search ────────────────────────────────────────────────────
 function setupSearch() {
@@ -1007,27 +852,3 @@ function closeMobileMenu() {
   document.getElementById("mobileMenu").classList.remove("open");
 }
 window.closeMobileMenu = closeMobileMenu;
-
-function formatCommentText(rawText) {
-  if (!rawText.includes("[[quote]]")) return escHtml(rawText);
-
-  // Tách phần quote và phần nội dung thực
-  const quoteMatch = rawText.match(/\[\[quote\]\](.*)\|(.*)\[\[endquote\]\]/);
-  if (quoteMatch) {
-    const user = quoteMatch[1];
-    const text = quoteMatch[2];
-    const mainContent = rawText.split("[[endquote]]\n")[1] || "";
-
-    return `
-      <div class="rendered-quote" style="background: #f8f9fa; border-left: 3px solid #dee2e6; padding: 5px 10px; margin-bottom: 8px; border-radius: 4px; font-size: 12px; color: #666;">
-        <b style="color: #6c5ce7;">@${escHtml(user)}</b>: <i>${escHtml(text)}</i>
-      </div>
-      <div>${escHtml(mainContent)}</div>
-    `;
-  }
-  return escHtml(rawText);
-}
-
-// TRONG HÀM commentItemHTML và subReplyHTML, hãy sửa chỗ hiển thị text:
-// Thay vì: ${escHtml(cmt.text)}
-// Hãy dùng: ${formatCommentText(cmt.text)}

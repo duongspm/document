@@ -1,10 +1,9 @@
-// "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js"
 // ============================================================
 //  shared/firebase.js  —  Firebase init + tất cả helpers
 //  Mở rộng từ phiên bản cũ: thêm likes, comments, notifications
 // ============================================================
 import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getFirestore,
   collection, doc,
@@ -16,23 +15,23 @@ import {
 
 // ── Config ───────────────────────────────────────────────────
 const firebaseConfig = {
-  apiKey: "AIzaSyCnPc_SS_dR0dXl7WPY1FNp_YgKoUyBl-E",
-  authDomain: "my-creative-blog.firebaseapp.com",
-  projectId: "my-creative-blog",
-  storageBucket: "my-creative-blog.firebasestorage.app",
+  apiKey:            "AIzaSyCnPc_SS_dR0dXl7WPY1FNp_YgKoUyBl-E",
+  authDomain:        "my-creative-blog.firebaseapp.com",
+  projectId:         "my-creative-blog",
+  storageBucket:     "my-creative-blog.firebasestorage.app",
   messagingSenderId: "57335816842",
-  appId: "1:57335816842:web:9212c8576d23e534c00373",
+  appId:             "1:57335816842:web:9212c8576d23e534c00373",
 };
 
 export const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+export const db  = getFirestore(app);
 
 // ── Collection names ─────────────────────────────────────────
 export const COL = {
-  DOCS: "documents",
-  COMMENTS: "comments",
+  DOCS:          "documents",
+  COMMENTS:      "comments",
   NOTIFICATIONS: "notifications",
-  ANALYTICS: "analytics",
+  ANALYTICS:     "analytics",
 };
 
 // ============================================================
@@ -92,9 +91,9 @@ export function setUserReaction(docId, type) {
  * type: "like" | "dislike"
  */
 export async function toggleReaction(docId, type) {
-  const docRef = doc(db, COL.DOCS, docId);
-  const prev = getUserReaction(docId);
-  const opposite = type === "like" ? "dislike" : "like";
+  const docRef    = doc(db, COL.DOCS, docId);
+  const prev      = getUserReaction(docId);
+  const opposite  = type === "like" ? "dislike" : "like";
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(docRef);
@@ -168,13 +167,13 @@ export const listenAllComments = (cb) =>
 
 // Like 1 comment
 export async function toggleCommentLike(commentId) {
-  const key = `dv_clike_${commentId}`;
-  const liked = localStorage.getItem(key) === "1";
-  const cRef = doc(db, COL.COMMENTS, commentId);
+  const key    = `dv_clike_${commentId}`;
+  const liked  = localStorage.getItem(key) === "1";
+  const cRef   = doc(db, COL.COMMENTS, commentId);
 
   await updateDoc(cRef, { likes: increment(liked ? -1 : 1) });
   if (liked) localStorage.removeItem(key);
-  else localStorage.setItem(key, "1");
+  else       localStorage.setItem(key, "1");
   return !liked;
 }
 
@@ -211,8 +210,8 @@ export const listenNotifications = (cb) =>
 //  ANALYTICS — ghi lại page views theo ngày
 // ============================================================
 export async function recordPageView(page) {
-  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-  const ref = doc(db, COL.ANALYTICS, today);
+  const today   = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const ref     = doc(db, COL.ANALYTICS, today);
   try {
     await runTransaction(db, async (tx) => {
       const snap = await tx.get(ref);
