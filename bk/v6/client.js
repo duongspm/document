@@ -1031,3 +1031,85 @@ function formatCommentText(rawText) {
 // TRONG HÀM commentItemHTML và subReplyHTML, hãy sửa chỗ hiển thị text:
 // Thay vì: ${escHtml(cmt.text)}
 // Hãy dùng: ${formatCommentText(cmt.text)}
+
+// Cấu hình Tag cố định bạn muốn lọc
+const FIXED_TAG = "thong-dung"; 
+
+async function loadCommonDocs() {
+    const navList = document.getElementById("docs-nav-list");
+    const contentArea = document.getElementById("docs-content-area");
+
+    try {
+        // Truy vấn: Lấy document có chứa tag cố định trong mảng tags
+        // Lưu ý: Trường 'tags' trong Firebase nên là Array để dùng 'array-contains'
+        // Nếu 'tags' là String, ta sẽ lấy hết về rồi lọc bằng JS .filter()
+        const q = query(collection(db, "documents"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        
+        const allData = [];
+        snapshot.forEach(doc => allData.push({ id: doc.id, ...doc.data() }));
+
+        // Lọc dữ liệu theo tag cố định (không phân biệt hoa thường)
+        const filteredDocs = allData.filter(doc => {
+            const tags = doc.tags ? doc.tags.toLowerCase() : "";
+            return tags.includes(FIXED_TAG.toLowerCase());
+        });
+
+        if (filteredDocs.length === 0) {
+            contentArea.innerHTML = `<div class="empty">Không có tài liệu nào thuộc mục "${FIXED_TAG}"</div>`;
+            return;
+        }
+
+        // 1. Render Menu Sidebar (Cố định bên trái)
+        navList.innerHTML = filteredDocs.map((doc, index) => `
+            <li>
+                <a href="#quick-${doc.id}" class="nav-link ${index === 0 ? 'active' : ''}">
+                    ${doc.title}
+                </a>
+            </li>
+        `).join("");
+
+        // 2. Render Blocks Nội dung (Bên phải)
+        contentArea.innerHTML = filteredDocs.map(doc => `
+            <article class="doc-block" id="quick-${doc.id}">
+                <div class="doc-header">
+                    <h3 class="doc-title">${doc.title}</h3>
+                    <p class="doc-desc">${doc.desc || "Mô tả đang cập nhật..."}</p>
+                    
+                    <div class="doc-meta">
+                        <div class="meta-info">
+                            <span class="author">👤 ${doc.author || 'Admin'}</span>
+                            <span class="tags">${doc.tags}</span>
+                        </div>
+                        <div class="stats">
+                            <span>👁️ ${doc.views || 0}</span>
+                            <span>👍 ${doc.likes || 0}</span>
+                            <span>👎 ${doc.dislikes || 0}</span>
+                            <span>💬 ${doc.commentsCount || 0}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-tabs">
+                    <div class="tab-header">
+                        <button class="t-btn active" onclick="switchTab(event, 'html-${doc.id}')">HTML</button>
+                        <button class="t-btn" onclick="switchTab(event, 'css-${doc.id}')">CSS</button>
+                        <button class="t-btn" onclick="switchTab(event, 'js-${doc.id}')">JS</button>
+                        <button class="copy-btn" onclick="copyCode('${doc.id}')">📋 Copy</button>
+                    </div>
+                    <div class="tab-body">
+                        <pre id="html-${doc.id}" class="code-panel active"><code>${escHtml(doc.html || '')}</code></pre>
+                        <pre id="css-${doc.id}" class="code-panel"><code>${escHtml(doc.css || '')}</code></pre>
+                        <pre id="js-${doc.id}" class="code-panel"><code>${escHtml(doc.js || '')}</code></pre>
+                    </div>
+                </div>
+            </article>
+        `).join("");
+
+        // Kích hoạt ScrollSpy sau khi render
+        initScrollSpy();
+
+    } catch (error) {
+        console.error("Lỗi tải dữ liệu:", error);
+    }
+}

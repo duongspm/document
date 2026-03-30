@@ -3,17 +3,12 @@
 //  Tính năng: login, CRUD docs, comments moderation,
 //             analytics chart, confirm modal
 // ============================================================
-// Thêm vào cụm import từ Firebase SDK ở đầu file admin.js
-import { 
-  query, collection, where, orderBy, onSnapshot, getFirestore 
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-
 import {
   addDocument, updateDocument, deleteDocument,
   getDocument, listenDocumentsAdmin,
   listenAllComments, flagComment, hardDeleteComment,
   addComment, updateCommentCount,
-  getAnalytics, recordPageView, COL, db,
+  getAnalytics, recordPageView, COL,
 } from "./connection.js";
 import { toast }          from "./toast.js";
 import {
@@ -100,108 +95,15 @@ function bootAdmin() {
 
   listenAllComments(cmts => {
     allCmts = cmts;
-    // Chỉ đếm các cmt chưa xóa cho badge thông báo
     document.getElementById("nb-cmts").textContent = cmts.filter(c => !c.deleted).length;
-    
-    // Nếu đang ở trang bình luận, kiểm tra filter để gọi hàm render đúng
-    if (curPage === "comments") {
-      if (cmtFilter === "deleted") {
-        renderDeletedTable();
-      } else {
-        renderCmtTable();
-      }
-    }
+    if (curPage === "comments") renderCmtTable();
     if (curPage === "dashboard") renderDashStats();
   });
-  // listenAdminNotifications();
-  listenFeedbacks();
 }
-function renderDeletedTable() {
-  // Lọc ra các bình luận đã bị xóa
-  const deletedData = allCmts.filter(c => c.deleted);
-  
-  const tbody = document.getElementById("cmtTableBody");
-  const subtitle = document.getElementById("cmtSubtitle");
-  const docMap = Object.fromEntries(allDocs.map(x => [x.id, x.title || x.id]));
-
-  // Cập nhật tiêu đề và nút dọn sạch thùng rác
-  subtitle.innerHTML = `
-    ${deletedData.length} bình luận trong thùng rác
-    ${deletedData.length > 0 ? 
-      `<button class="btn btn-sm btn-danger" onclick="handleEmptyTrash()" style="margin-left:12px">🔥 Dọn sạch</button>` : ''}
-  `;
-
-  if (!deletedData.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--dim)">Thùng rác đang trống</td></tr>`;
-    return;
-  }
-
-  tbody.innerHTML = deletedData.map((c, i) => {
-    return `
-    <tr class="cmt-row-deleted">
-      <td style="text-align:center; font-size:11px">${i + 1}</td>
-      <td>
-        <div class="cmt-user-cell">
-          <div class="cmt-ava" style="background:${c.userColor || '#6c5ce7'}; width:24px; height:24px; font-size:10px">
-            ${escHtml(c.userAvatar || "?")}
-          </div>
-          <span class="cmt-username">${escHtml(c.userName || "Ẩn danh")}</span>
-        </div>
-      </td>
-      <td>
-        <div class="cmt-text-cell italic" style="color:var(--dim); font-style: italic;">
-          ${escHtml(c.text || "")}
-        </div>
-      </td>
-      <td class="cmt-doc-cell">${escHtml(docMap[c.docId] || "—")}</td>
-      <td class="cmt-time-cell">${formatDate(c.createdAt)}</td>
-      <td><span class="cmt-status status-del">🗑 Đã xoá 111</span></td>
-      <td>
-        <div class="cmt-act-cell">
-          <button class="btn btn-sm btn-ghost" onclick="restoreCmt('${c.id}')" title="Khôi phục">🔄</button>
-          <button class="btn btn-sm btn-danger" onclick="hardDel('${c.id}')" title="Xoá vĩnh viễn">🔥</button>
-        </div>
-      </td>
-    </tr>`;
-  }).join("");
-}
-// Thêm các hàm này vào cuối file admin.js hoặc khu vực xử lý Comments
-
-// Khôi phục bình luận (Đưa deleted về false)
-async function restoreCmt(id) {
-  try {
-    // Sử dụng hàm updateDocument có sẵn trong connection.js của bạn
-    await updateDocument(id, { deleted: false }, "comments"); 
-    toast.success("Đã khôi phục bình luận ✓");
-    // UI sẽ tự cập nhật nhờ listenAllComments gọi lại render
-  } catch (e) {
-    toast.error("Lỗi khôi phục: " + e.message);
-  }
-}
-window.restoreCmt = restoreCmt;
-
-// Dọn sạch toàn bộ thùng rác
-async function handleEmptyTrash() {
-  const list = allCmts.filter(c => c.deleted);
-  if (!list.length) return;
-
-  openConfirm("🔥 Dọn sạch thùng rác", `Xóa vĩnh viễn ${list.length} bình luận?`, async () => {
-    try {
-      for (const cmt of list) {
-        await hardDeleteComment(cmt.id); // Dùng hàm xóa vĩnh viễn của bạn
-      }
-      toast.success("Đã dọn sạch thùng rác!");
-    } catch (e) {
-      toast.error("Lỗi khi xóa: " + e.message);
-    }
-  });
-}
-window.handleEmptyTrash = handleEmptyTrash;
 
 // ── State ─────────────────────────────────────────────────────
 let allDocs    = [];
 let allCmts    = [];
-let allFeedbacks = []; // <--- THÊM DÒNG NÀY
 let curPage    = "dashboard";
 let prevPage   = "dashboard";
 let editId     = null;
@@ -227,9 +129,6 @@ function goto(page) {
   const map = { dashboard:renderDashboard, documents:renderDocuments, add:prepareForm, comments:renderCmtTable, analytics:loadAnalytics };
   map[page]?.();
   if (window.innerWidth <= 768) closeSidebar();
-  if (page === "feedback") {
-    renderAdminFeedbacks(allFeedbacks); // Ép render ngay khi chuyển trang
-  }
 }
 window.goto = goto;
 
@@ -607,17 +506,7 @@ function runPreview() {
 window.runPreview = runPreview;
 
 // ── COMMENTS ─────────────────────────────────────────────────
-// admin.js
-
-function setCmtFilter(val) {
-  cmtFilter = val; // Cập nhật biến state toàn cục
-  
-  if (val === "deleted") {
-    renderDeletedTable();
-  } else {
-    renderCmtTable();
-  }
-}
+function setCmtFilter(val) { cmtFilter=val; renderCmtTable(); }
 window.setCmtFilter = setCmtFilter;
 function getNestedComments(comments) {
     const parents = comments.filter(c => !c.parentId); // Lấy các cmt gốc
@@ -872,9 +761,8 @@ function renderFeedbackList(feedbacks) {
 }
 // Thêm vào file admin.js của bạn
 
-// admin.js
-
 function listenFeedbacks() {
+  // Giả sử bạn dùng collection 'notifications' để lưu feedback
   const q = query(
     collection(db, "notifications"), 
     where("type", "==", "feedback"),
@@ -885,119 +773,63 @@ function listenFeedbacks() {
     const feedbacks = [];
     snapshot.forEach(doc => feedbacks.push({ id: doc.id, ...doc.data() }));
 
-    // GÁN VÀO BIẾN TOÀN CỤC ĐÃ KHAI BÁO Ở BƯỚC 1
-    allFeedbacks = feedbacks; 
-
-    // Cập nhật badge thông báo
+    // 1. Cập nhật Badge trên chuông và sidebar
     const unreadCount = feedbacks.filter(f => f.status === "unread").length;
+    const bellBadge = document.getElementById('bell-badge');
     const sideBadge = document.getElementById('nb-feedback');
-    if (sideBadge) {
-      sideBadge.innerText = unreadCount || "";
-      sideBadge.style.display = unreadCount > 0 ? "block" : "none";
+    
+    if (unreadCount > 0) {
+      bellBadge.innerText = unreadCount;
+      bellBadge.style.display = 'block';
+      sideBadge.innerText = unreadCount;
+      sideBadge.style.display = 'block';
+    } else {
+      bellBadge.style.display = 'none';
+      sideBadge.style.display = 'none';
     }
 
-    // Nếu đang ở đúng trang thì mới render
-    if (curPage === "feedback") {
-      renderAdminFeedbacks(allFeedbacks);
-    }
+    // 2. Render danh sách ra trang Feedback
+    renderAdminFeedbacks(feedbacks);
   });
 }
 
 function renderAdminFeedbacks(list) {
   const container = document.getElementById('adminFeedbackList');
-  const subtitle = document.getElementById('fbSubtitle');
   if (!container) return;
-  // console.log("Dữ liệu nhận được để render:", list);
-  // Cập nhật số lượng ở tiêu đề phụ
-  if (subtitle) subtitle.textContent = `Có ${list.length} phản hồi từ hệ thống`;
 
   if (list.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:50px; color:var(--muted)">📭 Chưa có góp ý nào.</div>`;
+    container.innerHTML = `<div class="empty-state">Chưa có góp ý nào.</div>`;
     return;
   }
 
-  container.innerHTML = list.map(fb => {
-    // Xử lý thời gian an toàn
-    const dateObj = fb.createdAt?.seconds ? new Date(fb.createdAt.seconds * 1000) : new Date();
-    const timeStr = dateObj.toLocaleString('vi-VN');
-    const isUnread = fb.status === 'unread';
-
-    return `
-    <div class="fb-item ${isUnread ? 'is-unread' : ''}" id="fb-${fb.id}" 
-         style="background: ${isUnread ? 'rgba(108, 92, 231, 0.05)' : 'var(--bg-card)'}; 
-                border-left: 4px solid ${isUnread ? 'var(--acc1)' : 'transparent'};
-                padding: 20px; border-radius: 12px; margin-bottom: 15px; transition: 0.3s">
-      <div class="fb-item-header" style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px">
-        <div class="fb-user" style="display:flex; gap:12px">
-          <div class="fb-avatar" style="width:40px; height:40px; border-radius:50%; background:var(--acc1); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold">
-            ${(fb.userContact?.name || "A").slice(0,1).toUpperCase()}
-          </div>
+  container.innerHTML = list.map(fb => `
+    <div class="fb-item ${fb.status === 'unread' ? 'is-unread' : ''}" id="fb-${fb.id}">
+      <div class="fb-item-header">
+        <div class="fb-user">
+          <div class="fb-avatar">${(fb.userContact?.name || "A").slice(0,1)}</div>
           <div>
-            <div class="fb-name" style="font-weight:600; color:var(--text)">${escHtml(fb.userContact?.name || "Người dùng ẩn danh")}</div>
-            <div class="fb-meta" style="font-size:12px; color:var(--dim)">
-              ${escHtml(fb.userContact?.email || "No Email")} • ${escHtml(fb.userContact?.phone || "No Phone")}
-            </div>
+            <div class="fb-name">${fb.userContact?.name || "Người dùng ẩn danh"}</div>
+            <div class="fb-meta">${fb.userContact?.email || "No Email"} • ${fb.userContact?.phone || "No Phone"}</div>
           </div>
         </div>
-        <div class="fb-time" style="font-size:12px; color:var(--dim)">${timeStr}</div>
+        <div class="fb-time">${new Date(fb.createdAt).toLocaleString('vi-VN')}</div>
       </div>
-      <div class="fb-item-body" style="line-height:1.6; color:var(--text-soft); margin-bottom:15px">${escHtml(fb.body || "")}</div>
-      <div class="fb-item-actions" style="display:flex; gap:15px; border-top:1px solid var(--border); padding-top:10px">
-        ${isUnread ? `<button onclick="updateFbStatus('${fb.id}', 'read')" class="btn-sm-link" style="color:var(--acc1); border:none; background:none; cursor:pointer">✅ Đánh dấu đã đọc</button>` : '<span style="color:var(--dim); font-size:12px">✓ Đã xem</span>'}
-        <button onclick="deleteFb('${fb.id}')" class="btn-sm-link btn-danger-link" style="color:var(--err); border:none; background:none; cursor:pointer">🗑️ Xoá</button>
+      <div class="fb-item-body">${fb.body}</div>
+      <div class="fb-item-actions">
+        ${fb.status === 'unread' ? `<button onclick="updateFbStatus('${fb.id}', 'read')" class="btn-sm-link">Đánh dấu đã đọc</button>` : ''}
+        <button onclick="deleteFb('${fb.id}')" class="btn-sm-link btn-danger-link">Xoá</button>
       </div>
-    </div>`;
-  }).join('');
+    </div>
+  `).join('');
 }
+
 // Cập nhật trạng thái đã đọc
-// Đánh dấu đã đọc
-async function markAllFbRead() {
-  const unreadFbs = allFeedbacks.filter(f => f.status === 'unread');
-  
-  if (unreadFbs.length === 0) {
-    return toast.info("Không có góp ý nào mới");
-  }
-
-  openConfirm("✅ Đọc tất cả", `Đánh dấu ${unreadFbs.length} góp ý là đã xem?`, async () => {
-    try {
-      // Sử dụng Promise.all để cập nhật nhanh nhiều tài liệu cùng lúc
-      const promises = unreadFbs.map(fb => 
-        updateDocument(fb.id, { status: "read" }, "notifications")
-      );
-      
-      await Promise.all(promises);
-      toast.success("Đã cập nhật tất cả góp ý ✓");
-      // UI sẽ tự động render lại nhờ onSnapshot ở trên
-      await updateDocument(id, { status: 'read' }, "notifications")
-    } catch (e) {
-      toast.error("Có lỗi xảy ra khi cập nhật");
-    }
-  });
-}
-window.markAllFbRead = markAllFbRead;
-async function updateFbStatus(id, status) {
+window.updateFbStatus = async (id, status) => {
   try {
-    await updateDocument(id, { status: status }, "notifications");
-    toast.success("Đã cập nhật trạng thái");
-  } catch (e) {
-    toast.error("Lỗi: " + e.message);
-  }
-}
-window.updateFbStatus = updateFbStatus;
-
-// Xóa feedback
-async function deleteFb(id) {
-  openConfirm("🗑️ Xoá góp ý", "Bạn muốn xoá góp ý này vĩnh viễn?", async () => {
-    try {
-      await deleteDocument(id, "notifications"); // Đảm bảo hàm deleteDocument hỗ trợ truyền Collection
-      toast.success("Đã xoá feedback");
-    } catch (e) {
-      toast.error("Lỗi khi xoá");
-    }
-  });
-}
-window.deleteFb = deleteFb;
-
+    const docRef = doc(db, "notifications", id);
+    await updateDoc(docRef, { status: status });
+  } catch (e) { console.error(e); }
+};
 // async function admCopy(text) {
 //   await copyToClipboard(text);
 //   toast.success("Đã copy! 📋");

@@ -1,0 +1,24 @@
+@charset "utf-8";
+/* Google Font */
+
+/* Reset */
+html{font-size: 62.5%;}
+body{color: #000; word-spacing: 0; font-size: 1.6rem; line-height: 1.7; overflow-x: hidden;
+-webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; -moz-text-size-adjust: 100%;}
+
+*{margin: 0; padding: 0; box-sizing: border-box; border: 0;}
+h1, h2, h3, h4, h5, h6{font-size: 100%; font-weight: bold;}
+ol, ul{list-style: none;}
+table{border-collapse: collapse; border-spacing: 0;}
+dt, th{text-align: left; font-weight: normal;}
+a{color: inherit; text-decoration: none;}
+img{vertical-align: bottom; max-width: 100%; height: auto;}
+
+@media screen and (min-width: 768px){
+    a[href^="tel:"]{pointer-events: none;}
+    .only-sp{display: none;}
+}
+
+@media screen and (max-width: 767px){
+    .only-pc{display: none;}
+}

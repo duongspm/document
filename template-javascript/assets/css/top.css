@@ -1,0 +1,307 @@
+@charset "utf-8";
+/* Top */
+html{scroll-padding-top: 85px;}
+header{position: sticky; top: 0; left: 0; width: 100%; z-index: 100; background: #fff;
+display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;}
+.main{padding-top: 85px;}
+
+.menu{display: flex;}
+.menu li{margin-left: 20px;}
+.menu a.is-active{color: red;}
+
+#pagetop{width: 60px; height: 60px; line-height: 1; background: red; color: #fff; text-align: center; padding: 15px 0 0 0; border-radius: 100%; position: fixed; bottom: 10px; right: 10px; z-index: 100; cursor: pointer; opacity: 0; pointer-events: none; transition: .4s;}
+#pagetop.is-show{opacity: 1; pointer-events: auto;}
+
+#pagetop2{width: 60px; height: 60px; line-height: 1; background: red; color: #fff; text-align: center; padding: 15px 0 0 0; border-radius: 100%; position: fixed; bottom: 10px; left: 10px; z-index: 100; cursor: pointer; opacity: 0; pointer-events: none; transition: .4s;}
+#pagetop2.is-show{opacity: 1; pointer-events: auto;}
+
+@media screen and (min-width: 769px){
+	
+}
+
+@media screen and (max-width: 768px){
+	
+}
+
+@media screen and (max-width: 1200px){
+	
+}
+
+@media screen and (max-width: 480px){
+	
+}
+
+/* Block lớn bao quanh */
+.doc-section {
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* Tiêu đề của Block lớn */
+.doc-section-header {
+    border-bottom: 2px solid #f7fafc;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+}
+
+.doc-section-title {
+    font-size: 2.75rem;
+    color: #2d3748;
+    margin-bottom: 8px;
+    position: relative;
+    padding-left: 15px;
+}
+
+/* Tạo dấu gạch đứng trang trí bên cạnh tiêu đề lớn */
+.doc-section-title::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    width: 4px;
+    background: #3182ce;
+    border-radius: 2px;
+}
+
+.doc-section-desc {
+    color: #718096;
+    font-size: 2rem;
+}
+
+/* Nội dung bên dưới (Danh sách tài liệu) */
+.doc-section-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+.doc-section-content-1col{
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+/* Các tài liệu nhỏ bên trong */
+.doc-item {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.doc-item:hover {
+    background: #fff;
+    border-color: #3182ce;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.doc-item-title {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #1a202c;
+}
+
+.doc-item-text {
+    font-size: 1.6rem;
+    color: #4a5568;
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* Giới hạn 2 dòng mô tả */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.doc-item-text.--full{
+    display: block;
+}
+
+.doc-item-link {
+    color: #3182ce;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+/* Layout chia 2 cột */
+.doc-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    /* Cột nội dung và cột Sidebar 280px */
+    gap: 40px;
+    margin: 40px auto;
+    padding: 0 20px;
+    align-items: stretch;
+    /* Quan trọng: để Sidebar không bị kéo dài hết chiều cao */
+}
+
+/* Sidebar bên phải */
+.doc-sidebar {
+    position: relative;
+}
+
+/* Phần Sticky */
+.toc-sticky {
+    position: sticky;
+    top: 100px;
+    /* Cách mép trên trình duyệt 20px khi cuộn */
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+}
+
+.toc-label {
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #a0aec0;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.toc-link {
+    text-decoration: none;
+    color: #4a5568;
+    font-size: 1.95rem;
+    transition: all 0.2s;
+    border-left: 2px solid transparent;
+    padding-left: 12px;
+}
+
+.toc-link:hover {
+    color: #3182ce;
+    border-left-color: #bee3f8;
+}
+
+/* Class active khi đang ở section đó (có thể dùng JS để thêm) */
+.toc-link.is-active {
+    color: #3182ce;
+    font-weight: 600;
+    border-left-color: #3182ce;
+}
+
+/* Responsive: Ẩn sidebar trên mobile hoặc chuyển thành full width */
+@media (max-width: 992px) {
+    .doc-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .doc-sidebar {
+        display: none;
+        /* Thường sẽ ẩn TOC trên mobile để ưu tiên nội dung */
+    }
+}
+
+/* Container mục lục */
+.toc-list {
+    position: relative;
+    border-left: 2px solid #edf2f7;
+    /* Đường kẻ mờ cố định */
+    padding-left: 0;
+}
+
+
+
+/* Khi mục đó đang được xem */
+.toc-link.is-active {
+    color: #3182ce;
+    border-left-color: #3182ce;
+    /* Đường kẻ đậm hiện lên */
+    font-weight: 600;
+    background: linear-gradient(to right, #ebf8ff, transparent);
+}
+
+.toc-link:hover:not(.is-active) {
+    color: #2d3748;
+    border-left-color: #cbd5e0;
+}
+/* .doc-sidebar { background: rgba(255, 0, 0, 0.1); } */
+
+.text-shadow{
+    text-shadow: 0 0 1px #000, 0 0 2px #000, 0 0 3px #000, 0 0 4px #000, 0 0 5px #000, 0 0 6px #000, 0 0 7px #000, 0 0 8px #000, 0 0 9px #000, 0 0 10px #000;
+    color: #fff;
+    font-size: 30px;
+    text-align: center;}
+
+.text-shadow--white{
+    color: #40210f;
+    text-shadow: 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff;
+}
+
+.c-review-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    margin: 30px 0;
+}
+
+/* Header & Tabs */
+.c-review-box__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8fafc;
+    padding: 0 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.c-review-box__tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.c-review-box__tab {
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.c-review-box__tab.is-active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+/* Body & Panes */
+.c-review-box__pane {
+    display: none; /* Ẩn tất cả các ngăn mặc định */
+    padding: 20px;
+    background: #ffffff;
+}
+
+.c-review-box__pane.is-active {
+    display: block; /* Hiện ngăn đang được chọn */
+}
+
+/* Style riêng cho ngăn Code */
+.c-review-box__pane:not(#preview) {
+    background: #1e293b;
+    color: #f8fafc;
+    font-family: 'Courier New', Courier, monospace;
+    max-height: 400px;
+    overflow: auto;
+}
+
+/* Vùng Demo */
+.c-review-box__demo {
+    min-height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+}

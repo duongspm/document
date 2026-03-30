@@ -1,0 +1,338 @@
+@charset "utf-8";
+
+/* Common */
+.container {
+    max-width: 1200px;
+    width: calc(100% - 40px);
+    margin: 0 auto;
+}
+
+.txt-link {
+    color: #f00;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+}
+
+.txt-link:hover {
+    text-decoration: none;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.txt-flip {
+    text-align: right;
+    transform: rotateY(180deg);
+}
+
+.txt-flipcen {
+    text-align: center;
+    transform: rotateY(180deg);
+}
+
+.cap,
+[class*="cap-"] {
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.cap-abs_right {
+    position: absolute;
+    bottom: 0.7rem;
+    right: 0.7rem;
+    text-align: right;
+}
+
+.cap-abs_left {
+    position: absolute;
+    bottom: 0.7rem;
+    left: 0.7rem;
+}
+
+.cap-right {
+    padding-top: 5px;
+    text-align: right;
+}
+
+.cap-left {
+    padding-top: 5px;
+}
+
+.shadow {
+    color: #fff;
+    text-shadow: 0 0 0.1rem rgba(0, 0, 0, .5), 0 0 0.2rem rgba(0, 0, 0, .5), 0 0 0.3rem rgba(0, 0, 0, .5), 0 0 0.4rem rgba(0, 0, 0, .5), 0 0 0.5rem rgba(0, 0, 0, .5), 0 0 0.6rem rgba(0, 0, 0, .5), 0 0 0.7rem rgba(0, 0, 0, .5), 0 0 0.8rem rgba(0, 0, 0, .5), 0 0 0.9rem rgba(0, 0, 0, .5), 0 0 1rem rgba(0, 0, 0, .5);
+}
+
+
+/* Header */
+/* menu sp */
+
+/* --- 1. Button Menu (Giữ nguyên hiệu ứng xoay dấu X) --- */
+.menu-trigger {
+    position: fixed;
+    /* Cố định ở góc */
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    z-index: 1001;
+    /* Phải cao hơn menu-wrap */
+}
+
+.menu-trigger span {
+    display: block;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #333;
+    /* Màu mặc định */
+    border-radius: 4px;
+    transition: all 0.4s ease-in-out;
+}
+
+/* Đổi màu gạch ngang thành trắng khi menu mở để nổi bật trên nền tối */
+.menu-trigger.is-open span {
+    background-color: #fff;
+}
+
+/* Vị trí 3 vạch */
+.menu-trigger span:nth-child(1) {
+    top: 0;
+}
+
+.menu-trigger span:nth-child(2) {
+    top: 13px;
+}
+
+.menu-trigger span:nth-child(3) {
+    top: 26px;
+}
+
+/* Xoay thành dấu X */
+.menu-trigger.is-open span:nth-child(1) {
+    transform: translateY(13px) rotate(-45deg);
+}
+
+.menu-trigger.is-open span:nth-child(2) {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.menu-trigger.is-open span:nth-child(3) {
+    transform: translateY(-13px) rotate(45deg);
+}
+
+
+/* --- 2. Menu Toàn Màn Hình với Clip-path --- */
+#menu-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: rgba(30, 41, 59, 0.95);
+    /* Màu nền tối, hơi trong suốt */
+    z-index: 1000;
+    /* Thấp hơn nút bấm */
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* HIỆU ỨNG CHÍNH: Bắt đầu là hình tròn 0% ở góc trên phải */
+    clip-path: circle(0% at 100% 0%);
+
+    /* Tốc độ bung tỏa mượt mà */
+    transition: clip-path 0.6s cubic-bezier(0.77, 0, 0.175, 1);
+
+    /* Khóa các sự kiện chuột khi đang ẩn */
+    pointer-events: none;
+}
+
+/* Khi menu mở (.is-open) */
+#menu-wrap.is-open {
+    /* Bung tỏa thành hình tròn 150% để bao phủ toàn bộ màn hình hình chữ nhật */
+    clip-path: circle(150% at 100% 0%);
+
+    /* Mở lại các sự kiện chuột */
+    pointer-events: auto;
+}
+
+/* --- 3. Style cho các Link bên trong menu --- */
+.menu-list {
+    list-style: none;
+    text-align: center;
+    padding: 0;
+}
+
+.menu-list li {
+    margin: 25px 0;
+
+    /* Hiệu ứng mờ dần và trượt nhẹ cho từng link (Staggered Load) */
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s ease;
+    transition-delay: 0s;
+    /* Mặc định không delay */
+}
+
+/* Khi menu mở, hiện các link */
+#menu-wrap.is-open .menu-list li {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Thêm delay cho từng mục để tạo hiệu ứng "sóng" */
+#menu-wrap.is-open .menu-list li:nth-child(1) {
+    transition-delay: 0.3s;
+}
+
+#menu-wrap.is-open .menu-list li:nth-child(2) {
+    transition-delay: 0.4s;
+}
+
+#menu-wrap.is-open .menu-list li:nth-child(3) {
+    transition-delay: 0.5s;
+}
+
+.menu-list a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.menu-list a:hover,
+.menu-list a.is-active {
+    color: #60a5fa;
+    /* Màu khi hover */
+}
+
+/* menu sp */
+
+@media screen and (min-width: 769px) {}
+
+@media screen and (max-width: 768px) {}
+
+@media screen and (max-width: 1200px) {}
+
+@media screen and (max-width: 480px) {}
+
+/* Main */
+
+@media screen and (min-width: 769px) {}
+
+@media screen and (max-width: 768px) {}
+
+@media screen and (max-width: 1200px) {}
+
+@media screen and (max-width: 480px) {}
+
+/* Footer */
+
+@media screen and (min-width: 769px) {}
+
+@media screen and (max-width: 768px) {}
+
+@media screen and (max-width: 1200px) {}
+
+@media screen and (max-width: 480px) {}
+
+/* Animate */
+@media screen{
+    .fade-in{opacity: 0; transition: 1.2s;}
+    .fade-in.is-view{opacity: 1;}
+
+    .fade-up{opacity: 0; transform: translateY(30px); transition: 1.2s;}
+    .fade-up.is-view{opacity: 1; transform: translateY(0);}
+
+    .fade-right{opacity: 0; transform: translateX(-10%); transition: 1.2s;}
+    .fade-right.is-view{opacity: 1; transform: translateX(0);}
+    
+    .fade-left{opacity: 0; transform: translateX(10%); transition: 1.2s;}
+    .fade-left.is-view{opacity: 1; transform: translateX(0);}
+    
+    .zoom-left{overflow: hidden;}
+    .zoom-left img{display: block; width: 100%; height: auto; clip-path: inset(0 0 100% 100%); transform: scale(1.2); transform-origin: bottom; transition: transform 2s cubic-bezier(0.77, 0, 0.175, 1), clip-path 1s cubic-bezier(0.77, 0, 0.175, 1);}
+    .zoom-left.is-view img{clip-path: inset(0 0 0 0); transform: scale(1);}
+
+    .zoom-right{overflow: hidden;}
+    .zoom-right img{display: block; width: 100%; height: auto; clip-path: inset(0 100% 100% 0); transform: scale(1.1); transform-origin: bottom; transition: transform 2s cubic-bezier(0.77, 0, 0.175, 1), clip-path 1s cubic-bezier(0.77, 0, 0.175, 1);}
+    .zoom-right.is-view img{clip-path: inset(0 0 0 0); transform: scale(1);}
+
+    .zoom-center{overflow: hidden;}
+    .zoom-center img{display: block; width: 100%; height: auto; clip-path: inset(100% 0 100% 0); transform: scale(1.2); transform-origin: bottom; transition: transform 2s cubic-bezier(0.77, 0, 0.175, 1), clip-path 1s cubic-bezier(0.77, 0, 0.175, 1);}
+    .zoom-center.is-view img{clip-path: inset(0 0 0 0); transform: scale(1);}
+        
+    .js-splitText span{opacity: 0; transform: translateY(50%); filter: blur(20px); transition: .5s; display: inline-block;}
+    .js-splitText.is-view span{opacity: 1; transform: translateY(0); filter: blur(0);}
+    
+    .js-splitText .txt-zoom{transform: scale(2) translateY(50%);}
+    .js-splitText.is-view .txt-zoom{transform: scale(1) translateY(0);}
+}
+.footer{
+    position: relative;
+}
+/* Container chính của nút */
+.c-back-to-top {
+    position: fixed;
+    left: 25px;
+    bottom: 25px;
+    z-index: 999;
+    
+    width: 48px;
+    height: 48px;
+    background-color: #333; /* Màu trung tính tránh xung đột */
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+    /* Trạng thái ẩn mặc định */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.8);
+    
+    /* Hiệu ứng mượt mà */
+    transition: 
+        opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+        visibility 0.4s,
+        transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+        background-color 0.3s,
+        bottom 0.3s ease-out;
+}
+
+/* Khi cuộn xuống: Thêm class hiển thị */
+.c-back-to-top.is-active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Khi chạm Footer: Tránh đè lên nội dung chân trang */
+.c-back-to-top.is-at-footer {
+    /* --footer-offset sẽ được JS tính toán động */
+    bottom: calc(var(--footer-offset, 100px) + 20px);
+}
+
+/* Hover effect */
+.c-back-to-top:hover {
+    background-color: #000;
+    transform: translateY(-5px) scale(1.05);
+}
+
+.c-back-to-top svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    margin: auto;
+}

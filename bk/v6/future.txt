@@ -1,0 +1,49 @@
+phát triển từng chức năng một, code rõ ràng và hướng dẫn chính xác vị trí thêm vào cụ thể chi tiết dựa trên source code đã xây dựng trước đó
+không cần phải đăng nhập ai cũng có thể tương tác
+
+- feature like, dislike, more, người dùng vào xem chi tiết document có thể like dislike share, hiển thị số lượng like dislike
+
+- Nút Chia Sẻ
+Chia sẻ bài viết/dự án trên Twitter, LinkedIn, Facebook
+Tạo meta tag OG động
+
+- Bình luận trong document đã được thêm, người dùng có thể xem và để lại bình luận,
+giao diện bình luận ở trang client hiển thị tên thời gian nội dung, người dùng có thể phản hồi lẫn nhau (Threaded comments)
+
+Thêm giao diện xem danh sách, duyệt, xóa bình luận, trả lời bình luận, số lượt like, dislike bình luận  
+Admin Quản Độc Bình Luận 
+Đánh dấu bình luận không phù hợp
+danh sách hiển thị stt tên nội dung thời gian trạng thái
+
+- danh sách lọc document sẽ được sắp xếp theo số lượt like
+
+- thêm chức năng sửa document
+
+- Thông Báo Toast
+Thành công: Bình luận đã được đăng ✓
+Lỗi: Không thể tải dữ liệu ✗
+Thông tin: Bài viết đã được lưu ✏️
+Thư viện: Dùng CSS tùy chỉnh hoặc Toastr.js
+
+- Modal Dialog
+Xác nhận trước khi xóa bình luận (admin)
+Dialog chia sẻ với icon mạng xã hội
+
+- Floating Action Button (FAB)
+Giữ btnTop nhưng thêm mục khác:
+Mở chat/liên hệ
+Menu (trên mobile)
+UI: Menu mở rộng khi hover/click
+
+- Admin (Bảng điều khiển)
+ cần một trang Admin chuyên sâu để:
+Xem biểu đồ lượt truy cập hàng ngày (dùng Chart.js).
+Duyệt hoặc xóa bình luận nhanh.
+Quản lý danh mục (Tags) bằng giao diện kéo thả.
+
+- Thông báo (In-app Notifications)
+Khi có tài liệu mới hoặc có người phản hồi bình luận của người dùng. Sử dụng Firebase Cloud Messaging hoặc đơn giản là một collection notifications
+
+- Code Playground (Live Preview)
+Với các snippet HTML/CSS/JS, thêm nút "Run Demo". Một khung iframe sẽ hiện ra hiển thị kết quả trực tiếp.
+Tích hợp Monaco Editor (trình soạn thảo của VS Code) để người dùng có thể sửa code và xem thay đổi real-time.

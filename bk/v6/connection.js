@@ -24,7 +24,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+const db = getFirestore(app);
 
 export function listenDocuments(callback) {
   const docsRef = collection(db, "documents");
@@ -274,18 +274,3 @@ export const getAnalytics = async () => {
   );
   return snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
 };
-
-export async function emptyTrash() {
-  const q = query(collection(db, "comments"), where("deleted", "==", true));
-  const snapshot = await getDocs(q);
-  
-  if (snapshot.empty) return 0;
-
-  const batch = writeBatch(db);
-  snapshot.forEach((d) => {
-    batch.delete(d.ref);
-  });
-
-  await batch.commit();
-  return snapshot.size; // Trả về số lượng đã xóa để làm toast thông báo
-}

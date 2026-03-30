@@ -1,19 +1,20 @@
-// shared/firebase.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+// "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js"
+// ============================================================
+//  shared/firebase.js  —  Firebase init + tất cả helpers
+//  Mở rộng từ phiên bản cũ: thêm likes, comments, notifications
+// ============================================================
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
 import {
   getFirestore,
-  collection,
-  onSnapshot,
-  doc,
-  getDoc,
-  addDoc,
-  updateDoc,
-  deleteDoc, getDocs,
-  query, orderBy, where,
+  collection, doc,
+  addDoc, updateDoc, deleteDoc, getDoc, getDocs,
+  query, orderBy, onSnapshot, where,
   serverTimestamp, increment, runTransaction,
   limit, startAfter
-} from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+// ── Config ───────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyCnPc_SS_dR0dXl7WPY1FNp_YgKoUyBl-E",
   authDomain: "my-creative-blog.firebaseapp.com",
@@ -23,46 +24,15 @@ const firebaseConfig = {
   appId: "1:57335816842:web:9212c8576d23e534c00373",
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
-
-export function listenDocuments(callback) {
-  const docsRef = collection(db, "documents");
-  return onSnapshot(docsRef, (snapshot) => {
-    const docs = snapshot.docs.map((docSnap) => ({
-      id: docSnap.id,
-      ...docSnap.data(),
-    }));
-    callback(docs);
-  });
-}
-
-// export function getDocument(id) {
-//   const docRef = doc(db, "documents", id);
-//   return getDoc(docRef);
-// }
-
-// export function addDocument(data) {
-//   const docsRef = collection(db, "documents");
-//   return addDoc(docsRef, data);
-// }
-
-// export function updateDocument(id, data) {
-//   const docRef = doc(db, "documents", id);
-//   return updateDoc(docRef, data);
-// }
-
-// export function deleteDocument(id) {
-//   const docRef = doc(db, "documents", id);
-//   return deleteDoc(docRef);
-// }
 
 // ── Collection names ─────────────────────────────────────────
 export const COL = {
-  DOCS:          "documents",
-  COMMENTS:      "comments",
+  DOCS: "documents",
+  COMMENTS: "comments",
   NOTIFICATIONS: "notifications",
-  ANALYTICS:     "analytics",
+  ANALYTICS: "analytics",
 };
 
 // ============================================================
@@ -85,11 +55,11 @@ export const deleteDocument = (id) => deleteDoc(doc(db, COL.DOCS, id));
 export const getDocument = (id) => getDoc(doc(db, COL.DOCS, id));
 
 // Lắng nghe realtime — sort theo likes DESC (trang client)
-// export const listenDocuments = (cb) =>
-//   onSnapshot(
-//     query(collection(db, COL.DOCS), orderBy("likes", "desc"), orderBy("createdAt", "desc")),
-//     snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-//   );
+export const listenDocuments = (cb) =>
+  onSnapshot(
+    query(collection(db, COL.DOCS), orderBy("likes", "desc"), orderBy("createdAt", "desc")),
+    snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })))
+  );
 
 // Sort theo createdAt DESC (trang admin)
 export const listenDocumentsAdmin = (cb) =>
@@ -122,9 +92,9 @@ export function setUserReaction(docId, type) {
  * type: "like" | "dislike"
  */
 export async function toggleReaction(docId, type) {
-  const docRef    = doc(db, COL.DOCS, docId);
-  const prev      = getUserReaction(docId);
-  const opposite  = type === "like" ? "dislike" : "like";
+  const docRef = doc(db, COL.DOCS, docId);
+  const prev = getUserReaction(docId);
+  const opposite = type === "like" ? "dislike" : "like";
 
   await runTransaction(db, async (tx) => {
     const snap = await tx.get(docRef);
@@ -177,10 +147,6 @@ export const hardDeleteComment = (id) => deleteDoc(doc(db, COL.COMMENTS, id));
 export const flagComment = (id, flagged) =>
   updateDoc(doc(db, COL.COMMENTS, id), { flagged, flaggedAt: flagged ? serverTimestamp() : null });
 
-
-// ----
-
-
 // Lắng nghe comments của 1 document (realtime)
 export const listenComments = (docId, cb) =>
   onSnapshot(
@@ -192,36 +158,36 @@ export const listenComments = (docId, cb) =>
     ),
     snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })))
   );
- 
+
 // Lắng nghe TẤT CẢ comments (cho admin)
 export const listenAllComments = (cb) =>
   onSnapshot(
     query(collection(db, COL.COMMENTS), orderBy("createdAt", "desc")),
     snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })))
   );
- 
+
 // Like 1 comment
 export async function toggleCommentLike(commentId) {
-  const key    = `dv_clike_${commentId}`;
-  const liked  = localStorage.getItem(key) === "1";
-  const cRef   = doc(db, COL.COMMENTS, commentId);
- 
+  const key = `dv_clike_${commentId}`;
+  const liked = localStorage.getItem(key) === "1";
+  const cRef = doc(db, COL.COMMENTS, commentId);
+
   await updateDoc(cRef, { likes: increment(liked ? -1 : 1) });
   if (liked) localStorage.removeItem(key);
-  else       localStorage.setItem(key, "1");
+  else localStorage.setItem(key, "1");
   return !liked;
 }
- 
+
 export function getCommentLiked(commentId) {
   return localStorage.getItem(`dv_clike_${commentId}`) === "1";
 }
- 
+
 // Cập nhật commentCount trên document
 export const updateCommentCount = async (docId, delta) => {
   const ref = doc(db, COL.DOCS, docId);
   await updateDoc(ref, { commentCount: increment(delta) });
 };
- 
+
 // ============================================================
 //  NOTIFICATIONS (in-app)
 // ============================================================
@@ -231,22 +197,22 @@ export const addNotification = (data) =>
     read: false,
     createdAt: serverTimestamp(),
   });
- 
+
 export const markNotifRead = (id) =>
   updateDoc(doc(db, COL.NOTIFICATIONS, id), { read: true });
- 
+
 export const listenNotifications = (cb) =>
   onSnapshot(
     query(collection(db, COL.NOTIFICATIONS), orderBy("createdAt", "desc"), limit(50)),
     snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() })))
   );
- 
+
 // ============================================================
 //  ANALYTICS — ghi lại page views theo ngày
 // ============================================================
 export async function recordPageView(page) {
-  const today   = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
-  const ref     = doc(db, COL.ANALYTICS, today);
+  const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  const ref = doc(db, COL.ANALYTICS, today);
   try {
     await runTransaction(db, async (tx) => {
       const snap = await tx.get(ref);
@@ -266,7 +232,7 @@ export async function recordPageView(page) {
     });
   } catch (e) { /* silent */ }
 }
- 
+
 // Lấy analytics 30 ngày gần nhất
 export const getAnalytics = async () => {
   const snap = await getDocs(
@@ -274,18 +240,3 @@ export const getAnalytics = async () => {
   );
   return snap.docs.map(d => ({ id: d.id, ...d.data() })).reverse();
 };
-
-export async function emptyTrash() {
-  const q = query(collection(db, "comments"), where("deleted", "==", true));
-  const snapshot = await getDocs(q);
-  
-  if (snapshot.empty) return 0;
-
-  const batch = writeBatch(db);
-  snapshot.forEach((d) => {
-    batch.delete(d.ref);
-  });
-
-  await batch.commit();
-  return snapshot.size; // Trả về số lượng đã xóa để làm toast thông báo
-}
