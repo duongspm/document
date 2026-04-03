@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modern GSAP Practice | Duongg Document Doc Vault</title>
+    <link rel="icon" href="../../gemini.svg" type="image/x-icon" />
+    <link rel="icon" href="https://duongspm.github.io/document/gemini.svg" type="image/x-icon" />
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="container nav-content">
+            <a href="https://duongspm.github.io/document/" target="_blank" class="header-logo">
+                <div class="hl-icon">⚡</div>
+                <span class="hl-name">Doc<strong>Vault</strong></span>
+            </a>
+            <nav>
+                <a href="#">Document</a>
+                <a href="#demo">Demo</a>
+                <a href="#section">Section</a>
+            </nav>
+        </div>
+    </header>
+    <div id="toast-container"></div>
+    <div class="control-bar-wrapper">
+        <div class="control-bar">
+            <div class="btn-group">
+                <button class="btn-main"  id="btn-restart" title="Phát lại từ đầu"><i class="icon">↺</i></button>
+                <button id="btn-reverse" title="Chạy ngược"><i class="icon">⏴-</i></button>
+                <button id="btn-play" title="Phát"><i class="icon">▶</i></button>
+                <button id="btn-pause" title="Tạm dừng"><i class="icon">⏸</i></button>
+                <button id="btn-resume" title="Tiếp tục"><i class="icon">⏯</i></button>
+                <button id="btn-pin" title="Ghim thanh điều khiển">📌</button>
+            </div>
+            
+            <div class="divider"></div>
+
+            <div class="status-info">
+                <span id="anim-status">Ready</span>
+            </div>
+        </div>
+    </div>
+    <!-- HERO -->
+    <section class="theory-section">
+        <div class="container">
+            <div class="header-content">
+                <h2 class="main-title">Khám Phá Sức Mạnh GSAP</h2>
+                <p class="main-desc">Hiểu rõ các khái niệm cốt lõi để làm chủ mọi chuyển động trên website của bạn.</p>
+            </div>
+            <div class="theory-grid">
+                <article class="theory-block">
+                    <div class="icon-wrapper">🚀</div>
+                    <div class="block-body">
+                        <h3 class="block-title">GSAP Tween</h3>
+                        <p class="block-content">Là đơn vị nhỏ nhất của chuyển động. Nó thay đổi thuộc tính của một đối tượng từ trạng thái A sang trạng thái B trong một khoảng thời gian nhất định.</p>
+                        <div class="sub-blocks-container">
+                            <div class="sub-block">
+                                <h4 class="sub-title">1. Import Thư viện Gsap</h4>
+                                <p class="sub-content">https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js</p>
+                            </div>
+                            <div class="sub-block">
+                                <h4 class="sub-title">2. Import Thư viện ScrollTrigger</h4>
+                                <p class="sub-content">https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js</p>
+                            </div>
+                        </div>
+                        <span class="tag">Basic Unit</span>
+                    </div>
+                </article>
+                <article class="theory-block">
+                    <div class="block-header">
+                        <div class="icon-wrapper">⏳</div>
+                        <h3 class="block-title">GSAP Timeline</h3>
+                        <p class="main-desc">Nhạc trưởng điều khiển mọi chuyển động theo trình tự.</p>
+                    </div>
+
+                    <div class="sub-blocks-container">
+                        <div class="sub-block">
+                            <h4 class="sub-title">1. Sequencing (Thứ tự)</h4>
+                            <p class="sub-content">Mặc định, các Tween trong Timeline sẽ chạy nối đuôi nhau. Cái trước kết thúc, cái sau mới bắt đầu.</p>
+                        </div>
+
+                        <div class="sub-block">
+                            <h4 class="sub-title">2. Position Parameter</h4>
+                            <p class="sub-content">Vũ khí bí mật để điều chỉnh thời điểm. Bạn có thể cho hiệu ứng chạy sớm hơn, muộn hơn hoặc chạy cùng lúc với ký hiệu <code>"-=0.5"</code> hoặc <code>"<"</code>.</p>
+                        </div>
+
+                        <div class="sub-block">
+                            <h4 class="sub-title">3. Global Control</h4>
+                            <p class="sub-content">Điều khiển toàn bộ chuỗi: <code>tl.pause()</code>, <code>tl.play()</code>, hoặc thay đổi tốc độ toàn bộ bằng <code>tl.timeScale(2)</code>.</p>
+                        </div>
+                    </div>
+
+                    <div class="block-footer">
+                        <span class="tag">Workflow Pro</span>
+                    </div>
+                </article>
+                <article class="theory-block">
+                    <div class="icon-wrapper">🎡</div>
+                    <div class="block-body">
+                        <h3 class="block-title">ScrollTrigger</h3>
+                        <p class="block-content">Plugin mạnh mẽ nhất để kết nối Animation với hành vi cuộn chuột. Cho phép tạo hiệu ứng Parallax, Pin (ghim) hoặc Scrub (tua ngược).</p>
+                        <span class="tag">Interactive</span>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="demo" class="section features">
+        <div class="container grid">
+            <div class="card card01" style="opacity: 0; transform: translate(200px)">
+                <p class="card-title">🎯1.<code>gsap.to()</code>→ animate đến</p>
+                <pre><code class="language-css">.box {
+    opacity: 0; transform: translate(200px)
+}</code></pre>
+                <pre><code class="language-js">gsap.to(".box", {
+    x: 200,
+    duration: 1
+});</code></pre>
+            <p class="desc">👉 Nghĩa: di chuyển .box sang phải 200px trong 1s</p>
+            </div>
+
+            <!-- start card item -->
+            <div class="card card02">
+                <p class="card-title">🎯2.<code>gsap.from()</code>→ animate từ</p>
+                <pre><code class="language-js">
+gsap.from(".card02", {
+    x: -200,
+    opacity: 0,
+    duration: 1
+});
+</code></pre>
+                <p class="desc">👉 Box sẽ bay từ trái vào</p>
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card03">
+                <p class="card-title">🎯3.<code>gsap.fromTo()</code>→ kiểm soát full</p>
+                <pre><code class="language-js">
+gsap.fromTo(".card03",
+    { x: -200, opacity: 0 },
+    { x: 0, opacity: 1, duration: 1 }
+);
+</code></pre>
+                <!-- <p class="desc">👉 Box sẽ bay từ trái vào</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card04">
+                <p class="card-title">🎨 4. Demo đơn giản (CHẠY NGAY)</p>
+                <pre><code class="language-js">
+gsap.to(".card04", {
+    x: 300,
+    duration: 1,
+    rotation: 360,
+    scale: 1.5
+});
+</code></pre>
+                <!-- <p class="desc">👉 Box sẽ bay từ trái vào</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card05">
+                <p class="card-title">🎯 Ví dụ easing</p>
+                <pre><code class="language-js">
+gsap.to(".card05", {
+    x: 300,
+    duration: 1,
+    ease: "bounce.out"
+});
+</code></pre>
+                <!-- <p class="desc">👉 Box sẽ bay từ trái vào</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card06">
+                <p class="card-title">🔁 6. Lặp animation</p>
+                <pre><code class="language-js">
+gsap.to(".card06", {
+    x: 200,
+    repeat: -1, // lặp vô hạn
+    yoyo: true,
+    duration: 1
+});
+</code></pre>
+                <!-- <p class="desc">👉 Box sẽ bay từ trái vào</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card07">
+                <p class="card-title">🎬 7.1 Timeline (SIÊU QUAN TRỌNG)</p>
+                <pre><code class="language-js">
+let tl = gsap.timeline();
+
+tl.to(".card07", { x: 200, duration: 1 })
+    .to(".card08", { y: 200, duration: 1 })
+    .to(".card09", { rotation: 360, duration: 1 });
+</code></pre>
+                <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p>
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card08">
+                <p class="card-title">🎬 7.2 Timeline (SIÊU QUAN TRỌNG)</p>
+                <pre><code class="language-js">
+let tl = gsap.timeline();
+
+tl.to(".card07", { x: 200, duration: 1 })
+    .to(".card08", { y: 200, duration: 1 })
+    .to(".card09", { rotation: 360, duration: 1 });
+</code></pre>
+                <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p>
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card09">
+                <p class="card-title">🎬 7.3 Timeline (SIÊU QUAN TRỌNG)</p>
+                <pre><code class="language-js">
+let tl = gsap.timeline();
+
+tl.to(".card07", { x: 200, duration: 1 })
+    .to(".card08", { y: 200, duration: 1 })
+    .to(".card09", { rotation: 360, duration: 1 });
+</code></pre>
+                <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p>
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card10">
+                <p class="card-title">⏱ (1) Delay giữa các animation</p>
+                <pre><code class="language-js">
+tl2.to(".card10", { x: 200, duration: 1 })
+    .to(".card11", { y: 200, duration: 1 }, "+=0.5");
+
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+            
+            <!-- start card item -->
+            <div class="card card11">
+                <p class="card-title">⏱ (2) Delay giữa các animation</p>
+                <pre><code class="language-js">
+tl2.to(".card10", { x: 5    0, duration: 1 })
+    .to(".card11", { y: 5   0, duration: 1 }, "+=0.5");
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+        
+            <!-- start card item -->
+            <div class="card card12">
+                <p class="card-title">🔄 Chạy song song</p>
+                <pre><code class="language-js">
+let tl3 = gsap.timeline();
+tl3.to(".card12", { x: 70, duration: 1 })
+    .to(".card13", { y: 70, duration: 1 }, "<");
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card13">
+                <p class="card-title">🔄 Chạy song song</p>
+                <pre><code class="language-js">
+let tl3 = gsap.timeline();
+tl3.to(".card12", { x: 70, duration: 1 })
+    .to(".card13", { y: 70, duration: 1 }, "<");
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card14">
+                <p class="card-title">🖱 8. Gắn với sự kiện (click)</p>
+                <pre><code class="language-js">
+document.querySelector(".card14").addEventListener("click", () => {
+    gsap.to(".card14", {
+        scale: 2,
+        duration: 0.5
+    });
+});
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card">
+                <p class="card-title">📜 9. Scroll Animation (ScrollTrigger)</p>
+                <pre><code class="language-js">
+https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js
+gsap.registerPlugin(ScrollTrigger);
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card15">
+                <p class="card-title">📜 9. Scroll Animation (ScrollTrigger)</p>
+                <pre><code class="language-js">
+gsap.from(".card15", {
+    scrollTrigger: ".card15",
+    y: 100,
+    opacity: 0,
+    duration: 1
+});
+</code></pre>
+                <p class="desc">👉 Scroll đến mới chạy hiệu ứng</p>
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card16">
+                <p class="card-title">📜 9. Scroll Animation (ScrollTrigger)</p>
+                <pre><code class="language-js">
+gsap.from(".card16", {
+    scrollTrigger: {
+        trigger: ".card16",
+        start: "top 80%",
+        end: "top 30%",
+        scrub: true
+    },
+    y: 200,
+    opacity: 0
+});
+</code></pre>
+                <!-- <p class="desc">👉 Dùng khi cần nhiều animation nối tiếp</p> -->
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card-item">
+                <p class="card-title">🎯 10. Stagger (animate nhiều phần tử)</p>
+                <pre><code class="language-js">
+gsap.from(".card-item", {
+    y: 50,
+    opacity: 0,
+    stagger: 0.2
+});
+</code></pre>
+                <p class="desc">👉 Mỗi item chạy lệch nhau 1s</p>
+            </div>
+            <!-- end card item -->
+            <!-- start card item -->
+            <div class="card card-item">
+                <p class="card-title">🎯 10. Stagger (animate nhiều phần tử)</p>
+                <pre><code class="language-js">
+gsap.from(".card-item", {
+    y: 50,
+    opacity: 0,
+    stagger: 0.2
+});
+</code></pre>
+                <p class="desc">👉 Mỗi item chạy lệch nhau 1s</p>
+            </div>
+            <!-- end card item -->
+            <!-- start card item -->
+            <div class="card card-item">
+                <p class="card-title">🎯 10. Stagger (animate nhiều phần tử)</p>
+                <pre><code class="language-js">
+gsap.from(".card-item", {
+    y: 50,
+    opacity: 0,
+    stagger: 0.2
+});
+</code></pre>
+                <p class="desc">👉 Mỗi item chạy lệch nhau 1s</p>
+            </div>
+            <!-- end card item -->
+            <!-- start card item -->
+            <div class="card card-item">
+                <p class="card-title">🎯 10. Stagger (animate nhiều phần tử)</p>
+                <pre><code class="language-js">
+gsap.from(".card-item", {
+    y: 50,
+    opacity: 0,
+    stagger: 0.2
+});
+</code></pre>
+                <p class="desc">👉 Mỗi item chạy lệch nhau 1s</p>
+            </div>
+            <!-- end card item -->
+
+            <!-- start card item -->
+            <div class="card card17">
+                <p class="card-title">💡 12. Demo thực tế (UI card animation)</p>
+                <pre><code class="language-js">
+gsap.from(".card17", {
+    y: 100,
+    opacity: 0,
+    duration: 0.8,
+    stagger: 0.2,
+    ease: "power3.out"
+});
+</code></pre>
+            </div>
+            <!-- end card item -->
+        </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section id="section" class="section gallery">
+        <div class="container grid">
+            <div class="box box1">
+                <p class="card-title">🎯 1.1 Pin (ghim section khi scroll)</p>
+                <p class="desc"><pre><code>Lệnh này điều khiển phần tử .box di chuyển sang phải 500px theo trục X. 
+    Tuy nhiên, thay vì chạy tự động theo thời gian (duration), 
+    tốc độ di chuyển của nó hoàn toàn phụ thuộc vào tốc độ bạn cuộn chuột.
+gsap.to(".card18", {
+    scrollTrigger: {
+        trigger: ".box1",  - Điểm mốc để bắt đầu tính toán. Khi vùng .section xuất hiện trong khung hình, ScrollTrigger sẽ bắt đầu "quan sát".
+        start: "top top", - Điểm bắt đầu: Khi đỉnh (top) của .section chạm vào đỉnh (top) của trình duyệt.
+        end: "+=500",- Điểm kết thúc: Animation sẽ kết thúc sau khi bạn cuộn thêm đúng 500px kể từ điểm bắt đầu.
+        scrub: true, - Liên kết trực tiếp: Nó biến thanh cuộn thành "dây cót". 
+                        Bạn cuộn xuống thì .box chạy tới, bạn cuộn ngược lên thì .box chạy lùi lại. 
+                        Nếu không có cái này, animation sẽ tự chạy từ đầu đến cuối ngay khi vừa chạm điểm start.    
+        pin: true - Ghim màn hình: Khi .box1 chạm đỉnh trình duyệt, nó sẽ bị "dán chặt" tại đó. 
+                        Màn hình sẽ không cuộn xuống tiếp cho đến khi .box hoàn thành quãng đường 500px. 
+                        Điều này tạo cảm giác nội dung đang chạy ngang trên một màn hình đứng yên.
+    },
+    x: 500 Đây là đích đến của animation.
+        Khi bạn bắt đầu cuộn (tại điểm start), x của .card18 là 0.
+        Khi bạn cuộn được 250px (một nửa quãng đường end), x sẽ là 250.
+        Khi bạn cuộn đủ 500px (đến điểm end), x sẽ đạt đúng 500.
+});
+4. Cơ chế hoạt động (Luồng trải nghiệm)
+Bạn cuộn trang xuống đến vị trí của .box1.
+Ngay khi .box1 chạm mép trên màn hình, nó sẽ dừng lại (bị ghim).
+Bạn tiếp tục cuộn chuột, nhưng trang web không trôi xuống tiếp. 
+Thay vào đó, bạn thấy cục .box từ từ trượt sang phải.
+Sau khi bạn cuộn đủ một đoạn dài 500px, cục .box đã trượt xong, lúc này .box1 mới được "mở khóa" và trang web tiếp tục cuộn xuống các nội dung bên dưới.
+</code></pre>
+            
+</p>
+                <div class="card card18">
+                    <pre><code class="language-js">
+gsap.to(".card18", {
+    scrollTrigger: {
+        trigger: ".box1",
+        start: "top top", // Khi đỉnh box1 chạm đỉnh màn hình
+        end: "+=500", // Kết thúc sau khi cuộn thêm 500px
+        scrub: true,
+        pin: true
+    },
+    x: 500
+});
+</code></pre>
+                <p class="desc">👉 Box sẽ đứng yên, card di chuyển</p>
+                </div>
+            </div>
+            <!-- end box -->
+            <div class="space"></div>
+
+            <!-- start box -->
+            <div class="box box2">
+                <p class="card-title">🎯 1.2 Scrub (animation theo scroll)</p>
+                <p class="desc">👉 Scroll tới đâu → animation chạy tới đó</p>
+                <pre><code class="language-js">
+gsap.to(".card-scrub", {
+    scrollTrigger: {
+        trigger: ".card-scrub", Đối tượng làm mốc. Khi .card-scrub xuất hiện trong khung hình, trình duyệt bắt đầu tính toán hiệu ứng.
+        start: "top 80%", Điểm bắt đầu: Hiệu ứng bắt đầu chạy khi đỉnh (top) của .box2 chạm vào vị trí 80% chiều cao màn hình (tức là khi nó vừa nhú lên từ cạnh dưới một đoạn).
+        end: "top 20%", Điểm kết thúc: Hiệu ứng kết thúc khi đỉnh (top) của .box2 chạm tới vị trí 20% chiều cao màn hình (gần sát mép trên).
+        scrub: 2, Đồng bộ hóa: Kết nối chuyển động trực tiếp với thanh cuộn. Cuộn tới đâu, box di chuyển tới đó. Nếu bạn dừng cuộn, box cũng dừng lại.
+                scrub: true bằng một con số, ví dụ scrub: 1. Lúc này, box sẽ mất 1 giây để "đuổi kịp" vị trí chuột, tạo cảm giác rất êm ái
+        markers: true,      // Kích hoạt các mốc đánh dấu (chỉ dùng khi code)
+        id: "box2-Scrub", //đặt tên markers
+    },
+    y: 200 Chuyển động y: 200
+        Đây là giá trị mà .box2 sẽ thay đổi:
+        Tại điểm Start (80% màn hình): y bắt đầu từ 0.
+        Tại điểm End (20% màn hình): y đạt giá trị tối đa là 200.
+        Trong khoảng giữa: Giá trị y sẽ tăng dần từ 0 đến 200 tương ứng với vị trí cuộn chuột của bạn.
+});
+</code></pre>
+                <div class="card card-scrub">
+                    <pre><code class="language-js">
+gsap.to(".card-scrub", {
+    scrollTrigger: {
+        trigger: ".card-scrub",
+        start: "top 80%",
+        end: "top 20%",
+        scrub: 2,
+        markers: true,      // Kích hoạt các mốc đánh dấu (chỉ dùng khi code)
+        id: "box2-Scrub", //đặt tên markers
+    },
+    y: 200
+});
+</code>
+                </div>
+            </div>
+            <!-- end box -->
+            
+            <div class="space"></div>
+            <!-- start box -->
+            <div class="box box3">
+                <p class="card-title">🎯 Code Hiệu ứng "Bay lên & Hiện hình" (Fade In Up)</p>
+                <pre><code>
+gsap.from(".card-fadeInUp", {
+    scrollTrigger: {
+        trigger: ".card-fadeInUp",
+        start: "top 85%",      // Khi đỉnh box cách đáy màn hình 15% (vừa lộ ra)
+        toggleActions: "play none none none", // Chạy 1 lần duy nhất khi cuộn tới
+                    "onEnter onLeave onEnterBack onLeaveBack"
+                    onEnter khi cuộn xuống phần tử đi vào tầm mắt - thường để play
+                    onLeave Khi cuộn xuống phần tử đi ra khỏi tầm mắt ở phía trên
+                    onEnterBack Khi cuộn ngược lên phần tử quay trở lại tầm mắt
+                    onLeaveBack khi cuộn ngược lên và phần tử đi ra khỏi tầm mắt ở phía dưới
+    },
+    y: 100,                   // Bay từ dưới lên 100px
+    opacity: 0,               // Từ mờ tịt
+    duration: 1.2,            // Chạy trong 1.2 giây
+    ease: "power4.out"        // Hiệu ứng giảm tốc cực mượt
+});
+                </code></pre>
+                <div class="card card-fadeInUp">
+                    <p class="card-title">"Bay lên & Hiện hình" (Fade In Up)</p>
+                    <pre><code class="language-js">
+gsap.from(".card-fadeInUp", {
+    scrollTrigger: {
+        trigger: ".card-fadeInUp",
+        start: "top 85%",      // Khi đỉnh box cách đáy màn hình 15% (vừa lộ ra)
+        toggleActions: "play none none none", // Chạy 1 lần duy nhất khi cuộn tới
+        // markers: true        // Bật lên để canh chỉnh nếu cần
+    },
+    y: 100,                   // Bay từ dưới lên 100px
+    opacity: 0,               // Từ mờ tịt
+    duration: 1.2,            // Chạy trong 1.2 giây
+    ease: "power4.out"        // Hiệu ứng giảm tốc cực mượt
+});
+                    </code></pre>
+                </div>
+                <!-- end card -->
+                <div class="card card-fadeInUp1">
+                    <p class="card-title">mỗi lần cuộn lên rồi xuống lại hiệu ứng đều chạy lại</p>
+                    <pre><code class="language-js">
+const anim15 = gsap.from(".card-fadeInUp1", {
+    scrollTrigger: {
+        trigger: ".card-fadeInUp1",
+        start: "top 85%",      // Khi đỉnh box cách đáy màn hình 15% (vừa lộ ra)
+        toggleActions: "restart none none reset", // Chạy 1 lần duy nhất khi cuộn tới
+        markers: true,        // Bật lên để canh chỉnh nếu cần
+        id: "1fadeInUp1",
+    },
+    y: 100,                   // Bay từ dưới lên 100px
+    opacity: 0,               // Từ mờ tịt
+    duration: 1.2,            // Chạy trong 1.2 giây
+    ease: "power4.out"        // Hiệu ứng giảm tốc cực mượt
+});
+                    </code></pre>
+                </div>
+                <!-- end card -->
+
+            </div>
+            <!-- end box -->
+            <div class="box box4">
+                <p class="card-title">làm cho nhiều đối tượng (Stagger)</p>
+<!-- end card -->
+                <div class="card cards-fadeInUp">
+                    <p class="card-title">hiện lên "lần lượt" như quân bài, hãy dùng batch:</p>
+                    <pre><code class="language-js">
+const anim16 = gsap.from(".cards-fadeInUp", {
+    scrollTrigger: {
+        trigger: ".box4", // Vùng chứa chung
+        start: "top 80%",
+    },
+    y: 100,// Bay từ dưới lên 100px
+    opacity: 0,
+    stagger: 0.2,             // Mỗi cái cách nhau 0.2 giây
+    duration: 1.8// Chạy trong 1.8 giây
+});
+                    </code></pre>
+                </div>
+                <!-- end card -->
+                 <div class="card cards-fadeInUp">
+                    <p class="card-title">hiện lên "lần lượt" như quân bài, hãy dùng batch:</p>
+                    <pre><code class="language-js">
+const anim16 = gsap.from(".cards-fadeInUp", {
+    scrollTrigger: {
+        trigger: ".box4", // Vùng chứa chung
+        start: "top 80%",
+    },
+    y: 100,// Bay từ dưới lên 100px
+    opacity: 0,
+    stagger: 0.2,             // Mỗi cái cách nhau 0.2 giây
+    duration: 1.8// Chạy trong 1.8 giây
+});
+                    </code></pre>
+                </div>
+                <!-- end card -->
+                 <div class="card cards-fadeInUp">
+                    <p class="card-title">hiện lên "lần lượt" như quân bài, hãy dùng batch:</p>
+                    <pre><code class="language-js">
+const anim16 = gsap.from(".cards-fadeInUp", {
+    scrollTrigger: {
+        trigger: ".box4", // Vùng chứa chung
+        start: "top 80%",
+    },
+    y: 100,// Bay từ dưới lên 100px
+    opacity: 0,
+    stagger: 0.2,             // Mỗi cái cách nhau 0.2 giây
+    duration: 1.8// Chạy trong 1.8 giây
+});
+                    </code></pre>
+                </div>
+                <!-- end card -->
+            </div>
+
+            <!-- end box -->
+            <div class="box box5">
+                <p class="card-title">🎯 1.3 Timeline + ScrollTrigger (PRO)</p>
+                <pre><code class="language-js">let tlbox = gsap.timeline({
+    scrollTrigger: {
+        trigger: ".box5",
+        start: "top top",
+        end: "+=1000",Độ dài của quãng đường cuộn để hoàn thành cả 3 bước animation là 1000px.
+        scrub: true, Đồng bộ hóa: Kết nối tiến trình của Timeline với thanh cuộn. 
+                    Cuộn 10% thanh cuộn = chạy 10% Timeline.
+        pin: true Ghim màn hình: Khi đỉnh .box5 chạm đỉnh trình duyệt, 
+                toàn bộ trang web sẽ "đứng hình" (không trôi xuống nữa) 
+                cho đến khi toàn bộ Timeline chạy xong.
+    }
+});
+
+tlbox.to(".cardbox5", { x: 300 }) Trong khoảng ~333px cuộn đầu tiên, cục .cardbox5 trượt sang phải 300px.
+    .to(".cardbox5", { y: 200 }) Trong ~333px cuộn tiếp theo, cục .cardbox5 trượt xuống dưới 200px.
+    .to(".cardbox5", { rotation: 360 }); Trong ~333px cuộn cuối cùng, cục .cardbox5 xoay một vòng tròn.
+Khi người dùng cuộn chuột, họ sẽ thấy:
+Trang web dừng lại tại .section.
+Cục .cardbox5 bắt đầu nhảy múa theo hình chữ L (sang phải rồi xuống dưới) và xoay tròn.
+Sau khi cục .cardbox5 xoay xong, trang web mới "nhả" ghim (unpin) và cho phép cuộn xuống các nội dung tiếp theo.
+</code></pre>
+                <div class="card cardbox5">
+                    <p class="card-title">👉 Làm landing page kiểu Apple 🍎 x: 300 -> y: 200 -> rotation: 360 </p>
+                    <pre><code class="language-js">let tlbox = gsap.timeline({
+    scrollTrigger: {
+        trigger: ".box5",
+        start: "top top",
+        end: "+=1000",
+        scrub: true,
+        pin: true
+    }
+});
+
+tlbox.to(".cardbox5", { x: 300 })
+    .to(".cardbox5", { y: 200 })
+    .to(".cardbox5", { rotation: 360 });
+</code></pre>
+                </div>
+            </div>
+            <!-- end box -->
+            <div class="box box6">
+                <h3 class="card-title">🎯 1.4 Batch (optimize nhiều element)</h3>
+            </div>
+
+            <!-- end box -->
+
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <h2>Let’s build something amazing</h2>
+        <button class="btn">Contact Us</button>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2026 DVT Studio</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+    hljs.highlightAll();
+    </script>
+    <script src="main.js"></script>
+</body>
+
+</html>

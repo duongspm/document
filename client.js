@@ -12,8 +12,8 @@ import {
 } from "./connection.js";
 import { toast }                                     from "./toast.js";
 import { escHtml, parseTags, formatDate, timeAgo,
-         getAnonUser, renderMarkdown, getTypeMeta,
-         debounce, copyToClipboard, buildSrcdoc }     from "./utils.js";
+          getAnonUser, renderMarkdown, getTypeMeta,
+          debounce, copyToClipboard, buildSrcdoc }     from "./utils.js";
 
 // ── State ────────────────────────────────────────────────────
 let allDocs        = [];
@@ -322,6 +322,11 @@ async function openDetail(id) {
 
   // Cập nhật OG meta
   updateOGMeta(doc);
+
+  // BƯỚC QUAN TRỌNG: Kích hoạt Prism tại đây
+  if (window.Prism) {
+    Prism.highlightAll();
+  }
 }
 window.openDetail = openDetail;
 
@@ -393,6 +398,40 @@ async function handleReaction(type) {
 window.handleReaction = handleReaction;
 
 // ── Code Demo ─────────────────────────────────────────────────
+// function buildDetailDemo(doc) {
+//   const h = escHtml(doc.codeHtml || "");
+//   const c = escHtml(doc.codeCss  || "");
+//   const j = escHtml(doc.codeJs   || "");
+
+//   return `
+//   <div class="detail-demo">
+//     <div class="dd-header">
+//       <div class="dd-title">▶ LIVE DEMO</div>
+//       <div class="dd-tabs">
+//         <button class="dd-tab active" onclick="switchDDTab(event,'dd-preview')">Preview</button>
+//         <button class="dd-tab" onclick="switchDDTab(event,'dd-html')">HTML</button>
+//         <button class="dd-tab" onclick="switchDDTab(event,'dd-css')">CSS</button>
+//         <button class="dd-tab" onclick="switchDDTab(event,'dd-js')">JS</button>
+//       </div>
+//     </div>
+//     <div class="dd-pane active" id="dd-preview">
+//       <iframe class="dd-frame" id="detailFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+//     </div>
+//     <div class="dd-pane" id="dd-html">
+//     <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeHtml||'')))}')">📋 Copy HTML</button>
+//       <pre class="dd-code">${h || "<!-- Không có HTML -->"}</pre>
+//     </div>
+//     <div class="dd-pane" id="dd-css">
+//     <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeCss||'')))}')">📋 Copy CSS</button>
+//       <pre class="dd-code">${c || "/* Không có CSS */"}</pre>
+//     </div>
+//     <div class="dd-pane" id="dd-js">
+//     <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeJs||'')))}')">📋 Copy JS</button>
+//       <pre class="dd-code">${j || "// Không có JS"}</pre>
+//     </div>
+//   </div>`;
+// }
+// sửa 08:25 0204
 function buildDetailDemo(doc) {
   const h = escHtml(doc.codeHtml || "");
   const c = escHtml(doc.codeCss  || "");
@@ -409,20 +448,24 @@ function buildDetailDemo(doc) {
         <button class="dd-tab" onclick="switchDDTab(event,'dd-js')">JS</button>
       </div>
     </div>
+    
     <div class="dd-pane active" id="dd-preview">
       <iframe class="dd-frame" id="detailFrame" sandbox="allow-scripts allow-same-origin"></iframe>
     </div>
+    
     <div class="dd-pane" id="dd-html">
-    <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeHtml||'')))}')">📋 Copy HTML</button>
-      <pre class="dd-code">${h || "<!-- Không có HTML -->"}</pre>
+      <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeHtml||'')))}')">📋 Copy HTML</button>
+      <pre class="line-numbers language-html"><code class="language-html">${h || ""}</code></pre>
     </div>
+    
     <div class="dd-pane" id="dd-css">
-    <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeCss||'')))}')">📋 Copy CSS</button>
-      <pre class="dd-code">${c || "/* Không có CSS */"}</pre>
+      <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeCss||'')))}')">📋 Copy CSS</button>
+      <pre class="line-numbers language-css"><code class="language-css">${c || "/* No CSS */"}</code></pre>
     </div>
+    
     <div class="dd-pane" id="dd-js">
-    <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeJs||'')))}')">📋 Copy JS</button>
-      <pre class="dd-code">${j || "// Không có JS"}</pre>
+      <button class="dd-copy" onclick="ddCopy('${btoa(unescape(encodeURIComponent(doc.codeJs||'')))}')">📋 Copy JS</button>
+      <pre class="line-numbers language-javascript"><code class="language-javascript">${j || "// No JS"}</code></pre>
     </div>
   </div>`;
 }
@@ -444,15 +487,6 @@ function switchDDTab(e, paneId) {
   );
 }
 window.switchDDTab = switchDDTab;
-
-// function ddCopy(b64) {
-//   try {
-//     const text = decodeURIComponent(escape(atob(b64)));
-//     navigator.clipboard.writeText(text).then(() => showFloatToast("✅ Đã copy!"));
-//   } catch { showFloatToast("❌ Không copy được"); }
-// }
-// window.ddCopy = ddCopy;
-// Đảm bảo đầu file client.js đã có: import { toast } from "./toast.js";
 
 async function ddCopy(b64) {
   // BƯỚC 1: Kiểm tra xem tham số truyền vào có rỗng không
@@ -573,12 +607,6 @@ function renderComments(comments, docId) {
 }
 
 // viet lại 3:02
-// 3. Hàm tạo HTML cho bình luận cha
-// 3. Hàm tạo HTML cho bình luận cha
-// 3. Hàm tạo HTML cho bình luận cha
-// 3. Hàm tạo HTML cho bình luận cha
-/* <div class="comment-body-text" id="text-${cmt.id}">${escHtml(cmt.text)}</div> */
-// 3. Hàm tạo HTML cho bình luận CHA
 // 3. Hàm tạo HTML cho bình luận CHA
 function commentItemHTML(cmt, docId, directReplies = []) {
   const liked = getCommentLiked(cmt.id);
@@ -1028,6 +1056,13 @@ function formatCommentText(rawText) {
   return escHtml(rawText);
 }
 
+function formatCodeBlock(code, lang) {
+  return `
+    <pre class="line-numbers language-${lang}">
+      <code class="language-${lang}">${escHtml(code)}</code>
+    </pre>
+  `;
+}
 // TRONG HÀM commentItemHTML và subReplyHTML, hãy sửa chỗ hiển thị text:
 // Thay vì: ${escHtml(cmt.text)}
 // Hãy dùng: ${formatCommentText(cmt.text)}
