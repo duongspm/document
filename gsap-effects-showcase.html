@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GSAP Effects Library — Thư viện hiệu ứng</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --card: #16161e;
+  --border: #252535;
+  --accent: #7c6df5;
+  --accent2: #f5a623;
+  --accent3: #23f5c8;
+  --text: #e8e8f0;
+  --muted: #6b6b80;
+  --danger: #f55252;
+  --success: #23f5a0;
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 12px;
+  --glow: 0 0 40px rgba(124,109,245,0.15);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* NOISE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(124,109,245,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,109,245,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.orb1 { width: 500px; height: 500px; background: rgba(124,109,245,0.12); top: -100px; left: -100px; }
+.orb2 { width: 400px; height: 400px; background: rgba(35,245,200,0.08); bottom: -80px; right: -80px; }
+.orb3 { width: 300px; height: 300px; background: rgba(245,166,35,0.08); top: 40%; left: 30%; }
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(124,109,245,0.1);
+  border: 1px solid rgba(124,109,245,0.3);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-bottom: 2rem;
+  letter-spacing: 0.1em;
+}
+
+.hero-badge::before {
+  content: '';
+  width: 7px; height: 7px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.7); }
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+}
+
+.hero h1 span.gradient {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero p {
+  color: var(--muted);
+  font-size: 1.15rem;
+  max-width: 560px;
+  line-height: 1.7;
+  margin-bottom: 3rem;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 3rem;
+  margin-bottom: 3rem;
+}
+
+.stat { text-align: center; }
+.stat-num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  animation: bounce 2s ease infinite;
+}
+
+.scroll-hint::after {
+  content: '';
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--accent), transparent);
+}
+
+@keyframes bounce {
+  0%,100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-8px); }
+}
+
+/* MAIN LAYOUT */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 4rem;
+}
+
+/* SECTION HEADER */
+.section-header {
+  padding: 5rem 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.section-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: var(--accent3);
+  text-transform: uppercase;
+  background: rgba(35,245,200,0.08);
+  border: 1px solid rgba(35,245,200,0.2);
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.section-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+
+/* GRID */
+.effects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 1.5rem;
+}
+
+/* CARD */
+.effect-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  position: relative;
+}
+
+.effect-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.effect-card:hover {
+  border-color: rgba(124,109,245,0.4);
+  box-shadow: 0 8px 40px rgba(124,109,245,0.1);
+}
+
+.effect-card:hover::before { opacity: 1; }
+
+/* PREVIEW AREA */
+.preview-area {
+  height: 200px;
+  background: #0d0d14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.preview-area:hover .preview-overlay { opacity: 1; }
+
+.preview-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(124,109,245,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 10;
+}
+
+.preview-overlay span {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+/* CARD BODY */
+.card-body { padding: 1.25rem 1.5rem; }
+
+.card-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.card-category {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cat-text { background: rgba(124,109,245,0.15); color: var(--accent); border: 1px solid rgba(124,109,245,0.3); }
+.cat-image { background: rgba(245,166,35,0.15); color: var(--accent2); border: 1px solid rgba(245,166,35,0.3); }
+.cat-scroll { background: rgba(35,245,200,0.15); color: var(--accent3); border: 1px solid rgba(35,245,200,0.3); }
+.cat-loading { background: rgba(245,82,82,0.15); color: var(--danger); border: 1px solid rgba(245,82,82,0.3); }
+.cat-button { background: rgba(35,245,160,0.15); color: var(--success); border: 1px solid rgba(35,245,160,0.3); }
+
+.card-desc {
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+/* CODE TABS */
+.code-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.75rem;
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 4px;
+  border: 1px solid var(--border);
+}
+
+.code-tab {
+  flex: 1;
+  padding: 5px 10px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.code-tab.active {
+  background: var(--card);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+
+/* CODE BLOCK */
+.code-block {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.code-block pre {
+  padding: 1rem;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: #a8b4d8;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.code-block pre::-webkit-scrollbar { width: 4px; height: 4px; }
+.code-block pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.kw { color: #c792ea; }
+.fn { color: #82aaff; }
+.str { color: #c3e88d; }
+.num { color: #f78c6c; }
+.cm { color: #546e7a; font-style: italic; }
+.prop { color: var(--accent3); }
+
+.code-actions {
+  display: flex;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.2);
+  justify-content: flex-end;
+}
+
+.copy-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 5px 12px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.copy-btn:hover {
+  background: rgba(124,109,245,0.1);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.copy-btn.copied {
+  background: rgba(35,245,160,0.1);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+.play-card-btn {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  padding: 5px 14px;
+  border-radius: 5px;
+  border: 1px solid rgba(124,109,245,0.3);
+  background: rgba(124,109,245,0.1);
+  color: var(--accent);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.play-card-btn:hover {
+  background: rgba(124,109,245,0.2);
+}
+
+/* FIXED CONTROL BAR */
+.control-bar {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  background: rgba(17,17,24,0.9);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,109,245,0.1);
+}
+
+.ctrl-btn {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.ctrl-btn:hover {
+  border-color: var(--accent);
+  background: rgba(124,109,245,0.1);
+  color: var(--accent);
+}
+
+.ctrl-btn.primary {
+  width: 52px; height: 52px;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  font-size: 1.2rem;
+}
+
+.ctrl-btn.primary:hover {
+  background: #9580ff;
+  transform: scale(1.05);
+}
+
+.ctrl-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.ctrl-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+
+/* ========================
+   PREVIEW ELEMENTS
+   ======================== */
+
+/* 1. Typewriter */
+.typewriter-text {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+/* 2. Split text */
+.split-word {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  overflow: hidden;
+}
+
+.split-word span {
+  display: inline-block;
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+/* 3. Glitch */
+.glitch-text {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text);
+  position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0;
+  opacity: 0;
+}
+.glitch-text::before { color: #ff0077; }
+.glitch-text::after { color: #00ffff; }
+
+/* 4. Gradient text */
+.gradient-text-el {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 50%, var(--accent2) 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 5. Counting number */
+.counter-el {
+  font-family: var(--font-mono);
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--accent2);
+}
+
+/* 6. Image reveal */
+.img-reveal-wrap {
+  position: relative;
+  width: 120px; height: 120px;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.img-reveal-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  z-index: 2;
+  border-radius: 8px;
+}
+
+.img-reveal-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transform: scale(1.2);
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+}
+
+/* 7. Image parallax */
+.parallax-img-wrap {
+  width: 180px; height: 120px;
+  overflow: hidden;
+  border-radius: 8px;
+  position: relative;
+}
+
+.parallax-img-inner {
+  width: 100%; height: 150%;
+  background: linear-gradient(135deg, #1a1a2e, #16213e, var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* 8. Floating cards */
+.float-cards {
+  display: flex;
+  gap: 12px;
+}
+
+.float-card {
+  width: 80px; height: 100px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 1.5rem;
+}
+
+.float-card span {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--muted);
+}
+
+/* 9. Scale bounce */
+.scale-box {
+  width: 80px; height: 80px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+/* 10. Loader bars */
+.loader-bars {
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+  height: 60px;
+}
+
+.loader-bar {
+  width: 8px;
+  background: var(--accent);
+  border-radius: 4px;
+  height: 20px;
+}
+
+/* 11. Spinner */
+.spinner-el {
+  width: 60px; height: 60px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+}
+
+/* 12. Progress bar */
+.progress-wrap {
+  width: 240px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent3));
+  border-radius: 4px;
+  width: 0;
+}
+
+/* 13. Scroll fade */
+.scroll-demo-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.scroll-item {
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  transform: translateX(-40px);
+  opacity: 0;
+}
+
+/* 14. Scroll scale */
+.scroll-scale-box {
+  width: 100px; height: 80px;
+  background: linear-gradient(135deg, var(--accent2), var(--danger));
+  border-radius: 12px;
+  transform: scale(0.5);
+  opacity: 0;
+}
+
+/* 15. Button ripple */
+.ripple-btn {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 32px;
+  background: transparent;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+
+/* 16. Magnetic button */
+.magnetic-btn {
+  position: relative;
+  padding: 12px 32px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: background 0.2s;
+}
+
+/* 17. Stagger list */
+.stagger-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+  width: 200px;
+}
+
+.stagger-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.stagger-dot {
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 18. Morph path */
+.morph-svg path { transition: d 0.5s; }
+
+/* 19. Word by word */
+.word-by-word {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.5;
+}
+
+.wbw-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px);
+  margin-right: 6px;
+}
+
+/* 20. Clip path reveal */
+.clip-box {
+  width: 160px; height: 100px;
+  background: linear-gradient(135deg, var(--accent), var(--accent3));
+  border-radius: 8px;
+  clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* TOOLTIP */
+[data-tip] {
+  position: relative;
+  cursor: help;
+}
+
+[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  font-family: var(--font-mono);
+}
+
+[data-tip]:hover::after { opacity: 1; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .effects-grid { grid-template-columns: 1fr; }
+  .hero-stats { gap: 1.5rem; }
+  .control-bar { bottom: 1rem; padding: 8px 14px; gap: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div class="hero-orb orb3"></div>
+
+  <div class="hero-badge">✦ GSAP EFFECTS LIBRARY v3.12</div>
+
+  <h1 id="hero-title">
+    Thư viện<br>
+    <span class="gradient">Hiệu ứng GSAP</span>
+  </h1>
+
+  <p id="hero-desc">Tổng hợp 20+ hiệu ứng animation chuyên nghiệp sẵn sàng sử dụng. Copy code HTML/CSS/JS và tích hợp ngay vào dự án của bạn.</p>
+
+  <div class="hero-stats" id="hero-stats">
+    <div class="stat">
+      <div class="stat-num" id="s1">0</div>
+      <div class="stat-label">Hiệu ứng</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="s2">0</div>
+      <div class="stat-label">Chủ đề</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="s3">0</div>
+      <div class="stat-label">Copy & Dùng ngay</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">SCROLL DOWN</div>
+</section>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- TEXT EFFECTS -->
+  <div class="section-header">
+    <span class="section-tag">01</span>
+    <h2 class="section-title">✦ Text Effects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="effects-grid">
+
+    <!-- CARD 1: Typewriter -->
+    <div class="effect-card" data-card="1">
+      <div class="preview-area" onclick="playCard(1)">
+        <div class="typewriter-text" id="typewriter-el">|</div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Typewriter Effect</div>
+          <span class="card-category cat-text">TEXT</span>
+        </div>
+        <p class="card-desc">Hiệu ứng gõ chữ từng ký tự. Dùng GSAP TextPlugin để animate từng character một cách mượt mà. Phù hợp cho hero text, tagline.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this, 'html', 1)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this, 'css', 1)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this, 'js', 1)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-1-html"><span class="cm">&lt;!-- HTML --&gt;</span>
+<span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"typewriter-text"</span> <span class="prop">id</span>=<span class="str">"tw"</span><span class="kw">&gt;</span>|<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-1-css" style="display:none"><span class="cm">/* CSS */</span>
+<span class="fn">.typewriter-text</span> {
+  <span class="prop">font-size</span>: <span class="num">2rem</span>;
+  <span class="prop">font-weight</span>: <span class="num">700</span>;
+  <span class="prop">color</span>: <span class="str">#7c6df5</span>;
+}</pre>
+          <pre id="code-1-js" style="display:none"><span class="cm">// JS — cần gsap + TextPlugin</span>
+<span class="fn">gsap</span>.<span class="fn">registerPlugin</span>(TextPlugin);
+<span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">"#tw"</span>, {
+  <span class="prop">duration</span>: <span class="num">2</span>,
+  <span class="prop">text</span>: {
+    <span class="prop">value</span>: <span class="str">"Hello World!"</span>,
+    <span class="prop">delimiter</span>: <span class="str">""</span>
+  },
+  <span class="prop">ease</span>: <span class="str">"none"</span>,
+  <span class="prop">repeat</span>: <span class="num">-1</span>,
+  <span class="prop">repeatDelay</span>: <span class="num">1</span>,
+  <span class="prop">yoyo</span>: <span class="kw">true</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,1,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,1,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,1,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(1)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 2: Split Text Reveal -->
+    <div class="effect-card" data-card="2">
+      <div class="preview-area" onclick="playCard(2)">
+        <div class="split-word" id="split-el">
+          <span>G</span><span>S</span><span>A</span><span>P</span>
+          <span style="margin:0 4px"> </span>
+          <span>M</span><span>a</span><span>g</span><span>i</span><span>c</span>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Split Text Reveal</div>
+          <span class="card-category cat-text">TEXT</span>
+        </div>
+        <p class="card-desc">Tách từng ký tự thành span riêng biệt rồi animate từ dưới lên với stagger delay. Tạo cảm giác chữ "bay" vào màn hình đầy ấn tượng.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',2)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',2)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',2)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-2-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"split-word"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;span&gt;</span>G<span class="kw">&lt;/span&gt;&lt;span&gt;</span>S<span class="kw">&lt;/span&gt;</span>
+  <span class="cm">&lt;!-- mỗi ký tự 1 span --&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-2-css" style="display:none"><span class="fn">.split-word</span> {
+  <span class="prop">font-size</span>: <span class="num">2rem</span>;
+  <span class="prop">font-weight</span>: <span class="num">800</span>;
+  <span class="prop">overflow</span>: <span class="str">hidden</span>;
+}
+<span class="fn">.split-word span</span> {
+  <span class="prop">display</span>: <span class="str">inline-block</span>;
+  <span class="prop">transform</span>: <span class="fn">translateY</span>(<span class="num">100%</span>);
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+}</pre>
+          <pre id="code-2-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".split-word span"</span>, {
+  <span class="prop">y</span>: <span class="num">0</span>,
+  <span class="prop">opacity</span>: <span class="num">1</span>,
+  <span class="prop">duration</span>: <span class="num">0.6</span>,
+  <span class="prop">ease</span>: <span class="str">"back.out(1.7)"</span>,
+  <span class="prop">stagger</span>: <span class="num">0.05</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,2,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,2,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,2,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(2)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 3: Glitch Text -->
+    <div class="effect-card" data-card="3">
+      <div class="preview-area" onclick="playCard(3)">
+        <div class="glitch-text" id="glitch-el" data-text="GLITCH">GLITCH</div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Glitch Text Effect</div>
+          <span class="card-category cat-text">TEXT</span>
+        </div>
+        <p class="card-desc">Hiệu ứng nhiễu loạn digital glitch. Kết hợp GSAP timeline với CSS pseudo-elements để tạo hiệu ứng tín hiệu bị lỗi hấp dẫn.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',3)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',3)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',3)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-3-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"glitch"</span>
+     <span class="prop">data-text</span>=<span class="str">"GLITCH"</span><span class="kw">&gt;</span>
+  GLITCH
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-3-css" style="display:none"><span class="fn">.glitch</span> { <span class="prop">position</span>: <span class="str">relative</span>; }
+<span class="fn">.glitch::before</span>,
+<span class="fn">.glitch::after</span> {
+  <span class="prop">content</span>: <span class="fn">attr</span>(data-text);
+  <span class="prop">position</span>: <span class="str">absolute</span>;
+  <span class="prop">top</span>: <span class="num">0</span>; <span class="prop">left</span>: <span class="num">0</span>;
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+}
+<span class="fn">.glitch::before</span> { <span class="prop">color</span>: <span class="str">#ff0077</span>; }
+<span class="fn">.glitch::after</span>  { <span class="prop">color</span>: <span class="str">#00ffff</span>; }</pre>
+          <pre id="code-3-js" style="display:none"><span class="kw">const</span> tl = <span class="fn">gsap</span>.<span class="fn">timeline</span>({<span class="prop">repeat</span>:<span class="num">-1</span>, <span class="prop">repeatDelay</span>:<span class="num">2</span>});
+tl.<span class="fn">to</span>(<span class="str">".glitch::before"</span>, {
+  <span class="prop">opacity</span>:<span class="num">1</span>, <span class="prop">x</span>:<span class="num">-4</span>, <span class="prop">duration</span>:<span class="num">0.1</span>
+})
+.<span class="fn">to</span>(<span class="str">".glitch::after"</span>, {
+  <span class="prop">opacity</span>:<span class="num">1</span>, <span class="prop">x</span>:<span class="num">4</span>, <span class="prop">duration</span>:<span class="num">0.1</span>
+}, <span class="str">"&lt;"</span>)
+.<span class="fn">to</span>(<span class="str">".glitch::before,.glitch::after"</span>, {
+  <span class="prop">opacity</span>:<span class="num">0</span>, <span class="prop">x</span>:<span class="num">0</span>, <span class="prop">duration</span>:<span class="num">0.1</span>,
+  <span class="prop">stagger</span>:<span class="num">0.05</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,3,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,3,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,3,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(3)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 4: Gradient Shift -->
+    <div class="effect-card" data-card="4">
+      <div class="preview-area" onclick="playCard(4)">
+        <div class="gradient-text-el" id="gradient-el">ColorShift</div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Gradient Text Shift</div>
+          <span class="card-category cat-text">TEXT</span>
+        </div>
+        <p class="card-desc">Animate background-position để tạo hiệu ứng màu gradient chuyển động liên tục trên text. Kết hợp GSAP và CSS background-clip.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',4)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',4)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',4)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-4-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"gradient-text"</span><span class="kw">&gt;</span>
+  ColorShift
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-4-css" style="display:none"><span class="fn">.gradient-text</span> {
+  <span class="prop">background</span>: <span class="fn">linear-gradient</span>(
+    135deg, #7c6df5, #23f5c8, #f5a623
+  );
+  <span class="prop">background-size</span>: <span class="num">200% 200%</span>;
+  <span class="prop">-webkit-background-clip</span>: <span class="str">text</span>;
+  <span class="prop">-webkit-text-fill-color</span>: <span class="str">transparent</span>;
+}</pre>
+          <pre id="code-4-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".gradient-text"</span>, {
+  <span class="prop">backgroundPosition</span>: <span class="str">"200% 200%"</span>,
+  <span class="prop">duration</span>: <span class="num">3</span>,
+  <span class="prop">ease</span>: <span class="str">"sine.inOut"</span>,
+  <span class="prop">repeat</span>: <span class="num">-1</span>,
+  <span class="prop">yoyo</span>: <span class="kw">true</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,4,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,4,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,4,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(4)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 5: Word by Word -->
+    <div class="effect-card" data-card="5">
+      <div class="preview-area" onclick="playCard(5)">
+        <div class="word-by-word" id="wbw-el">
+          <span class="wbw-word">Design</span>
+          <span class="wbw-word">with</span>
+          <span class="wbw-word">GSAP</span>
+          <span class="wbw-word">is</span>
+          <span class="wbw-word">Pure</span>
+          <span class="wbw-word">Magic</span>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Word by Word Reveal</div>
+          <span class="card-category cat-text">TEXT</span>
+        </div>
+        <p class="card-desc">Animate từng từ xuất hiện lần lượt từ dưới lên trên với fade in. Tạo cảm giác kịch tính và thu hút sự chú ý cho nội dung quan trọng.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',5)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',5)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',5)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-5-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"sentence"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;span</span> <span class="prop">class</span>=<span class="str">"word"</span><span class="kw">&gt;</span>Hello<span class="kw">&lt;/span&gt;</span>
+  <span class="kw">&lt;span</span> <span class="prop">class</span>=<span class="str">"word"</span><span class="kw">&gt;</span>World<span class="kw">&lt;/span&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-5-css" style="display:none"><span class="fn">.word</span> {
+  <span class="prop">display</span>: <span class="str">inline-block</span>;
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+  <span class="prop">transform</span>: <span class="fn">translateY</span>(<span class="num">20px</span>);
+  <span class="prop">margin-right</span>: <span class="num">6px</span>;
+}</pre>
+          <pre id="code-5-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".word"</span>, {
+  <span class="prop">opacity</span>: <span class="num">1</span>,
+  <span class="prop">y</span>: <span class="num">0</span>,
+  <span class="prop">duration</span>: <span class="num">0.5</span>,
+  <span class="prop">ease</span>: <span class="str">"power3.out"</span>,
+  <span class="prop">stagger</span>: <span class="num">0.15</span>,
+  <span class="prop">delay</span>: <span class="num">0.3</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,5,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,5,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,5,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(5)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 6: Number Counter -->
+    <div class="effect-card" data-card="6">
+      <div class="preview-area" onclick="playCard(6)">
+        <div class="counter-el" id="counter-el">0</div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Number Counter</div>
+          <span class="card-category cat-text">TEXT</span>
+        </div>
+        <p class="card-desc">Đếm số từ 0 đến mục tiêu với easing mượt mà. Dùng GSAP object tween để animate giá trị số, thường dùng cho statistics và dashboard.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',6)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',6)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',6)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-6-html"><span class="kw">&lt;div</span> <span class="prop">id</span>=<span class="str">"counter"</span><span class="kw">&gt;</span>0<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-6-css" style="display:none"><span class="fn">#counter</span> {
+  <span class="prop">font-size</span>: <span class="num">4rem</span>;
+  <span class="prop">font-weight</span>: <span class="num">700</span>;
+  <span class="prop">color</span>: <span class="str">#f5a623</span>;
+  <span class="prop">font-variant-numeric</span>: <span class="str">tabular-nums</span>;
+}</pre>
+          <pre id="code-6-js" style="display:none"><span class="kw">const</span> obj = { val: <span class="num">0</span> };
+<span class="fn">gsap</span>.<span class="fn">to</span>(obj, {
+  <span class="prop">val</span>: <span class="num">9999</span>,
+  <span class="prop">duration</span>: <span class="num">2.5</span>,
+  <span class="prop">ease</span>: <span class="str">"power2.out"</span>,
+  <span class="prop">onUpdate</span>: () => {
+    <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">"counter"</span>)
+      .textContent = <span class="fn">Math</span>.<span class="fn">round</span>(obj.val).<span class="fn">toLocaleString</span>();
+  }
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,6,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,6,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,6,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(6)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end text grid -->
+
+  <!-- IMAGE EFFECTS -->
+  <div class="section-header">
+    <span class="section-tag">02</span>
+    <h2 class="section-title">◈ Image Effects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="effects-grid">
+
+    <!-- CARD 7: Image Reveal -->
+    <div class="effect-card" data-card="7">
+      <div class="preview-area" onclick="playCard(7)">
+        <div class="img-reveal-wrap" id="img-reveal-wrap">
+          <div class="img-reveal-img" id="img-reveal-img" style="background:linear-gradient(135deg,#7c6df5,#23f5c8)"></div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Image Reveal (Wipe)</div>
+          <span class="card-category cat-image">IMAGE</span>
+        </div>
+        <p class="card-desc">Lớp màu trượt qua ảnh rồi lộ ra hình bên dưới. Kỹ thuật cổ điển trong motion design dùng clip-path hoặc scale transform.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',7)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',7)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',7)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-7-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"reveal-wrap"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;img</span> <span class="prop">class</span>=<span class="str">"reveal-img"</span>
+       <span class="prop">src</span>=<span class="str">"photo.jpg"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-7-css" style="display:none"><span class="fn">.reveal-wrap</span> {
+  <span class="prop">position</span>: <span class="str">relative</span>;
+  <span class="prop">overflow</span>: <span class="str">hidden</span>;
+}
+<span class="fn">.reveal-wrap::after</span> {
+  <span class="prop">content</span>: <span class="str">''</span>;
+  <span class="prop">position</span>: <span class="str">absolute</span>;
+  <span class="prop">inset</span>: <span class="num">0</span>;
+  <span class="prop">background</span>: <span class="str">#7c6df5</span>;
+  <span class="prop">transform</span>: <span class="fn">scaleX</span>(<span class="num">0</span>);
+  <span class="prop">transform-origin</span>: <span class="str">left</span>;
+}
+<span class="fn">.reveal-img</span> {
+  <span class="prop">transform</span>: <span class="fn">scale</span>(<span class="num">1.15</span>);
+}</pre>
+          <pre id="code-7-js" style="display:none"><span class="kw">const</span> tl = <span class="fn">gsap</span>.<span class="fn">timeline</span>();
+tl.<span class="fn">to</span>(<span class="str">".reveal-wrap::after"</span>, {
+  <span class="prop">scaleX</span>: <span class="num">1</span>,
+  <span class="prop">duration</span>: <span class="num">0.6</span>,
+  <span class="prop">ease</span>: <span class="str">"power4.inOut"</span>
+})
+.<span class="fn">to</span>(<span class="str">".reveal-wrap::after"</span>, {
+  <span class="prop">scaleX</span>: <span class="num">0</span>,
+  <span class="prop">transformOrigin</span>: <span class="str">"right"</span>,
+  <span class="prop">duration</span>: <span class="num">0.6</span>,
+  <span class="prop">ease</span>: <span class="str">"power4.inOut"</span>
+})
+.<span class="fn">to</span>(<span class="str">".reveal-img"</span>, {
+  <span class="prop">scale</span>: <span class="num">1</span>,
+  <span class="prop">duration</span>: <span class="num">0.8</span>
+}, <span class="str">"-=0.4"</span>);</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,7,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,7,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,7,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(7)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 8: Clip Path Reveal -->
+    <div class="effect-card" data-card="8">
+      <div class="preview-area" onclick="playCard(8)">
+        <div class="clip-box" id="clip-el">REVEAL</div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Clip Path Reveal</div>
+          <span class="card-category cat-image">IMAGE</span>
+        </div>
+        <p class="card-desc">Sử dụng clip-path polygon để ảnh/element "wipe" vào từ bên trái sang phải. Kỹ thuật hiện đại, mượt mà trên GPU.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',8)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',8)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',8)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-8-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"clip-reveal"</span><span class="kw">&gt;</span>
+  <span class="cm">&lt;!-- image or content --&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-8-css" style="display:none"><span class="fn">.clip-reveal</span> {
+  <span class="prop">clip-path</span>: <span class="fn">polygon</span>(
+    0 0, 0 0, 0 100%, 0 100%
+  );
+}</pre>
+          <pre id="code-8-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".clip-reveal"</span>, {
+  <span class="prop">clipPath</span>: <span class="str">"polygon(
+    0 0, 100% 0, 100% 100%, 0 100%
+  )"</span>,
+  <span class="prop">duration</span>: <span class="num">1</span>,
+  <span class="prop">ease</span>: <span class="str">"power4.inOut"</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,8,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,8,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,8,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(8)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 9: Floating Cards -->
+    <div class="effect-card" data-card="9">
+      <div class="preview-area" onclick="playCard(9)">
+        <div class="float-cards" id="float-cards">
+          <div class="float-card"><span style="font-size:1.8rem">🎨</span><span>Design</span></div>
+          <div class="float-card"><span style="font-size:1.8rem">⚡</span><span>Speed</span></div>
+          <div class="float-card"><span style="font-size:1.8rem">✨</span><span>Magic</span></div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Floating Cards</div>
+          <span class="card-category cat-image">IMAGE</span>
+        </div>
+        <p class="card-desc">Cards lơ lửng với chuyển động sin wave liên tục. Dùng GSAP repeat + yoyo kết hợp stagger offset để tạo nhịp điệu tự nhiên.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',9)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',9)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',9)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-9-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"cards"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"card"</span><span class="kw">&gt;</span>...<span class="kw">&lt;/div&gt;</span>
+  <span class="cm">&lt;!-- thêm cards --&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-9-css" style="display:none"><span class="fn">.card</span> {
+  <span class="prop">will-change</span>: <span class="str">transform</span>;
+}</pre>
+          <pre id="code-9-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".card"</span>, {
+  <span class="prop">y</span>: <span class="str">"-=20"</span>,
+  <span class="prop">duration</span>: <span class="num">2</span>,
+  <span class="prop">ease</span>: <span class="str">"sine.inOut"</span>,
+  <span class="prop">repeat</span>: <span class="num">-1</span>,
+  <span class="prop">yoyo</span>: <span class="kw">true</span>,
+  <span class="prop">stagger</span>: {
+    <span class="prop">each</span>: <span class="num">0.3</span>,
+    <span class="prop">from</span>: <span class="str">"start"</span>
+  }
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,9,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,9,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,9,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(9)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 10: Scale + Bounce -->
+    <div class="effect-card" data-card="10">
+      <div class="preview-area" onclick="playCard(10)">
+        <div class="scale-box" id="scale-el">🚀</div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Scale Bounce Entrance</div>
+          <span class="card-category cat-image">IMAGE</span>
+        </div>
+        <p class="card-desc">Element xuất hiện với hiệu ứng nảy lò xo. Dùng ease "back.out" để tạo overshoot tự nhiên, tăng cảm giác vui nhộn và sống động.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',10)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',10)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',10)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-10-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"bounce-el"</span><span class="kw">&gt;</span>
+  🚀
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-10-css" style="display:none"><span class="fn">.bounce-el</span> {
+  <span class="prop">transform</span>: <span class="fn">scale</span>(<span class="num">0</span>);
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+}</pre>
+          <pre id="code-10-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">fromTo</span>(<span class="str">".bounce-el"</span>,
+  { <span class="prop">scale</span>: <span class="num">0</span>, <span class="prop">opacity</span>: <span class="num">0</span> },
+  {
+    <span class="prop">scale</span>: <span class="num">1</span>,
+    <span class="prop">opacity</span>: <span class="num">1</span>,
+    <span class="prop">duration</span>: <span class="num">0.8</span>,
+    <span class="prop">ease</span>: <span class="str">"back.out(1.7)"</span>
+  }
+);</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,10,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,10,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,10,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(10)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LOADING EFFECTS -->
+  <div class="section-header">
+    <span class="section-tag">03</span>
+    <h2 class="section-title">⧖ Loading Effects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="effects-grid">
+
+    <!-- CARD 11: Loader Bars -->
+    <div class="effect-card" data-card="11">
+      <div class="preview-area" onclick="playCard(11)">
+        <div class="loader-bars" id="loader-bars">
+          <div class="loader-bar" style="background:var(--accent)"></div>
+          <div class="loader-bar" style="background:var(--accent)"></div>
+          <div class="loader-bar" style="background:var(--accent)"></div>
+          <div class="loader-bar" style="background:var(--accent)"></div>
+          <div class="loader-bar" style="background:var(--accent)"></div>
+          <div class="loader-bar" style="background:var(--accent3)"></div>
+          <div class="loader-bar" style="background:var(--accent3)"></div>
+          <div class="loader-bar" style="background:var(--accent2)"></div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Audio Bars Loader</div>
+          <span class="card-category cat-loading">LOADING</span>
+        </div>
+        <p class="card-desc">Loading bars nhảy như equalizer âm nhạc. Dùng GSAP stagger + yoyo + repeat để tạo chuyển động ngẫu nhiên liên tục đẹp mắt.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',11)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',11)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',11)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-11-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"bars"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"bar"</span><span class="kw">&gt;&lt;/div&gt;</span>
+  <span class="cm">&lt;!-- 7 bars --&gt;</span>
+<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-11-css" style="display:none"><span class="fn">.bars</span> {
+  <span class="prop">display</span>: <span class="str">flex</span>;
+  <span class="prop">gap</span>: <span class="num">5px</span>;
+  <span class="prop">align-items</span>: <span class="str">flex-end</span>;
+  <span class="prop">height</span>: <span class="num">60px</span>;
+}
+<span class="fn">.bar</span> {
+  <span class="prop">width</span>: <span class="num">8px</span>;
+  <span class="prop">height</span>: <span class="num">20px</span>;
+  <span class="prop">background</span>: <span class="str">#7c6df5</span>;
+  <span class="prop">border-radius</span>: <span class="num">4px</span>;
+}</pre>
+          <pre id="code-11-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".bar"</span>, {
+  <span class="prop">height</span>: () => <span class="fn">gsap</span>.<span class="fn">utils</span>.<span class="fn">random</span>(<span class="num">15</span>,<span class="num">55</span>),
+  <span class="prop">duration</span>: <span class="num">0.4</span>,
+  <span class="prop">ease</span>: <span class="str">"power1.inOut"</span>,
+  <span class="prop">repeat</span>: <span class="num">-1</span>,
+  <span class="prop">yoyo</span>: <span class="kw">true</span>,
+  <span class="prop">stagger</span>: {
+    <span class="prop">each</span>: <span class="num">0.08</span>,
+    <span class="prop">repeat</span>: <span class="num">-1</span>,
+    <span class="prop">yoyo</span>: <span class="kw">true</span>
+  }
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,11,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,11,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,11,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(11)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 12: Spinner -->
+    <div class="effect-card" data-card="12">
+      <div class="preview-area" onclick="playCard(12)">
+        <div class="spinner-el" id="spinner-el"></div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">GSAP Spinner</div>
+          <span class="card-category cat-loading">LOADING</span>
+        </div>
+        <p class="card-desc">Spinner quay vô tận dùng GSAP rotation thay vì CSS animation. Dễ dàng control speed và pause/resume lập trình.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',12)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',12)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',12)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-12-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"spinner"</span><span class="kw">&gt;&lt;/div&gt;</span></pre>
+          <pre id="code-12-css" style="display:none"><span class="fn">.spinner</span> {
+  <span class="prop">width</span>: <span class="num">60px</span>; <span class="prop">height</span>: <span class="num">60px</span>;
+  <span class="prop">border</span>: <span class="num">3px</span> <span class="str">solid</span> <span class="str">#252535</span>;
+  <span class="prop">border-top-color</span>: <span class="str">#7c6df5</span>;
+  <span class="prop">border-radius</span>: <span class="num">50%</span>;
+}</pre>
+          <pre id="code-12-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".spinner"</span>, {
+  <span class="prop">rotation</span>: <span class="num">360</span>,
+  <span class="prop">duration</span>: <span class="num">1</span>,
+  <span class="prop">ease</span>: <span class="str">"none"</span>,
+  <span class="prop">repeat</span>: <span class="num">-1</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,12,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,12,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,12,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(12)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 13: Progress Bar -->
+    <div class="effect-card" data-card="13">
+      <div class="preview-area" onclick="playCard(13)">
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-label">
+            <span>Loading...</span>
+            <span id="progress-pct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Progress Bar</div>
+          <span class="card-category cat-loading">LOADING</span>
+        </div>
+        <p class="card-desc">Thanh tiến trình animate từ 0–100% với easing power2. Dùng onUpdate để cập nhật text phần trăm theo thời gian thực.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',13)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',13)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',13)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-13-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"track"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"fill"</span> <span class="prop">id</span>=<span class="str">"bar"</span><span class="kw">&gt;&lt;/div&gt;</span>
+<span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;span</span> <span class="prop">id</span>=<span class="str">"pct"</span><span class="kw">&gt;</span>0%<span class="kw">&lt;/span&gt;</span></pre>
+          <pre id="code-13-css" style="display:none"><span class="fn">.track</span> {
+  <span class="prop">height</span>: <span class="num">8px</span>;
+  <span class="prop">background</span>: <span class="str">#252535</span>;
+  <span class="prop">border-radius</span>: <span class="num">4px</span>;
+  <span class="prop">overflow</span>: <span class="str">hidden</span>;
+}
+<span class="fn">.fill</span> {
+  <span class="prop">height</span>: <span class="num">100%</span>;
+  <span class="prop">width</span>: <span class="num">0</span>;
+  <span class="prop">background</span>: <span class="fn">linear-gradient</span>(
+    90deg, <span class="str">#7c6df5</span>, <span class="str">#23f5c8</span>);
+}</pre>
+          <pre id="code-13-js" style="display:none"><span class="kw">const</span> p = { val: <span class="num">0</span> };
+<span class="fn">gsap</span>.<span class="fn">to</span>(p, {
+  <span class="prop">val</span>: <span class="num">100</span>,
+  <span class="prop">duration</span>: <span class="num">2.5</span>,
+  <span class="prop">ease</span>: <span class="str">"power2.inOut"</span>,
+  <span class="prop">onUpdate</span>() {
+    <span class="kw">const</span> v = <span class="fn">Math</span>.<span class="fn">round</span>(p.val);
+    <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">"bar"</span>)
+      .style.width = v + <span class="str">"%"</span>;
+    <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">"pct"</span>)
+      .textContent = v + <span class="str">"%"</span>;
+  }
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,13,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,13,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,13,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(13)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCROLL EFFECTS -->
+  <div class="section-header">
+    <span class="section-tag">04</span>
+    <h2 class="section-title">↕ Scroll Effects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="effects-grid">
+
+    <!-- CARD 14: Scroll Fade In -->
+    <div class="effect-card" data-card="14">
+      <div class="preview-area" onclick="playCard(14)" style="flex-direction:column;gap:8px">
+        <div class="scroll-demo-items" id="scroll-items">
+          <div class="scroll-item">→ Item xuất hiện từ trái</div>
+          <div class="scroll-item">→ Stagger delay 0.1s</div>
+          <div class="scroll-item">→ ScrollTrigger trigger</div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">ScrollTrigger Fade In</div>
+          <span class="card-category cat-scroll">SCROLL</span>
+        </div>
+        <p class="card-desc">Element fade in khi scroll đến vùng nhìn thấy. Dùng GSAP ScrollTrigger plugin — chuẩn industry cho scroll animation.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',14)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',14)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',14)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-14-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"fade-item"</span><span class="kw">&gt;</span>Content 1<span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"fade-item"</span><span class="kw">&gt;</span>Content 2<span class="kw">&lt;/div&gt;</span>
+<span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"fade-item"</span><span class="kw">&gt;</span>Content 3<span class="kw">&lt;/div&gt;</span></pre>
+          <pre id="code-14-css" style="display:none"><span class="fn">.fade-item</span> {
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+  <span class="prop">transform</span>: <span class="fn">translateX</span>(<span class="num">-40px</span>);
+  <span class="prop">transition</span>: <span class="cm">/* handled by GSAP */</span>
+}</pre>
+          <pre id="code-14-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">registerPlugin</span>(ScrollTrigger);
+
+<span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".fade-item"</span>, {
+  <span class="prop">opacity</span>: <span class="num">1</span>,
+  <span class="prop">x</span>: <span class="num">0</span>,
+  <span class="prop">duration</span>: <span class="num">0.7</span>,
+  <span class="prop">ease</span>: <span class="str">"power3.out"</span>,
+  <span class="prop">stagger</span>: <span class="num">0.1</span>,
+  <span class="prop">scrollTrigger</span>: {
+    <span class="prop">trigger</span>: <span class="str">".fade-item"</span>,
+    <span class="prop">start</span>: <span class="str">"top 80%"</span>,
+    <span class="prop">end</span>: <span class="str">"bottom 20%"</span>,
+    <span class="prop">toggleActions</span>: <span class="str">"play none none reverse"</span>
+  }
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,14,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,14,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,14,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(14)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 15: Scroll Scale -->
+    <div class="effect-card" data-card="15">
+      <div class="preview-area" onclick="playCard(15)">
+        <div class="scroll-scale-box" id="scroll-scale-el"></div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Scroll Scale Reveal</div>
+          <span class="card-category cat-scroll">SCROLL</span>
+        </div>
+        <p class="card-desc">Element zoom từ nhỏ ra bình thường khi scroll đến. Kết hợp scale + opacity cho entrance effect ấn tượng với ScrollTrigger.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',15)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',15)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',15)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-15-html"><span class="kw">&lt;div</span> <span class="prop">class</span>=<span class="str">"scale-el"</span><span class="kw">&gt;
+  Content
+&lt;/div&gt;</span></pre>
+          <pre id="code-15-css" style="display:none"><span class="fn">.scale-el</span> {
+  <span class="prop">transform</span>: <span class="fn">scale</span>(<span class="num">0.5</span>);
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+}</pre>
+          <pre id="code-15-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".scale-el"</span>, {
+  <span class="prop">scale</span>: <span class="num">1</span>,
+  <span class="prop">opacity</span>: <span class="num">1</span>,
+  <span class="prop">duration</span>: <span class="num">0.8</span>,
+  <span class="prop">ease</span>: <span class="str">"back.out(1.4)"</span>,
+  <span class="prop">scrollTrigger</span>: {
+    <span class="prop">trigger</span>: <span class="str">".scale-el"</span>,
+    <span class="prop">start</span>: <span class="str">"top 85%"</span>
+  }
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,15,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,15,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,15,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(15)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BUTTON EFFECTS -->
+  <div class="section-header">
+    <span class="section-tag">05</span>
+    <h2 class="section-title">◉ Button Effects</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="effects-grid">
+
+    <!-- CARD 16: Ripple Button -->
+    <div class="effect-card" data-card="16">
+      <div class="preview-area" onclick="playCard(16)">
+        <button class="ripple-btn" id="ripple-btn" onclick="rippleEffect(event)">CLICK ME</button>
+        <div class="preview-overlay" style="pointer-events:none"><span>↻ Click button để xem</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Ripple Button</div>
+          <span class="card-category cat-button">BUTTON</span>
+        </div>
+        <p class="card-desc">Hiệu ứng sóng lan ra từ điểm click. Tính toán vị trí click rồi dùng GSAP để animate div hình tròn từ 0 đến scale lớn với fade out.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',16)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',16)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',16)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-16-html"><span class="kw">&lt;button</span> <span class="prop">class</span>=<span class="str">"ripple-btn"</span>
+  <span class="prop">onclick</span>=<span class="str">"ripple(event)"</span><span class="kw">&gt;</span>
+  CLICK ME
+<span class="kw">&lt;/button&gt;</span></pre>
+          <pre id="code-16-css" style="display:none"><span class="fn">.ripple-btn</span> {
+  <span class="prop">position</span>: <span class="str">relative</span>;
+  <span class="prop">overflow</span>: <span class="str">hidden</span>;
+  <span class="prop">padding</span>: <span class="num">12px 32px</span>;
+  <span class="prop">border</span>: <span class="num">2px</span> <span class="str">solid</span> <span class="str">#7c6df5</span>;
+  <span class="prop">background</span>: <span class="str">transparent</span>;
+  <span class="prop">cursor</span>: <span class="str">pointer</span>;
+}
+<span class="fn">.ripple</span> {
+  <span class="prop">position</span>: <span class="str">absolute</span>;
+  <span class="prop">border-radius</span>: <span class="num">50%</span>;
+  <span class="prop">background</span>: <span class="fn">rgba</span>(<span class="num">124,109,245,0.4</span>);
+  <span class="prop">pointer-events</span>: <span class="str">none</span>;
+}</pre>
+          <pre id="code-16-js" style="display:none"><span class="kw">function</span> <span class="fn">ripple</span>(e) {
+  <span class="kw">const</span> btn = e.currentTarget;
+  <span class="kw">const</span> r = <span class="fn">document</span>.<span class="fn">createElement</span>(<span class="str">"div"</span>);
+  r.className = <span class="str">"ripple"</span>;
+  <span class="kw">const</span> rect = btn.<span class="fn">getBoundingClientRect</span>();
+  <span class="kw">const</span> size = <span class="fn">Math</span>.<span class="fn">max</span>(rect.width, rect.height) * <span class="num">2</span>;
+  <span class="fn">gsap</span>.<span class="fn">set</span>(r, {
+    <span class="prop">width</span>: size, <span class="prop">height</span>: size,
+    <span class="prop">x</span>: e.clientX - rect.left - size/<span class="num">2</span>,
+    <span class="prop">y</span>: e.clientY - rect.top - size/<span class="num">2</span>,
+    <span class="prop">scale</span>: <span class="num">0</span>
+  });
+  btn.<span class="fn">appendChild</span>(r);
+  <span class="fn">gsap</span>.<span class="fn">to</span>(r, {
+    <span class="prop">scale</span>: <span class="num">1</span>, <span class="prop">opacity</span>: <span class="num">0</span>,
+    <span class="prop">duration</span>: <span class="num">0.6</span>,
+    <span class="prop">ease</span>: <span class="str">"power2.out"</span>,
+    <span class="prop">onComplete</span>: () => r.<span class="fn">remove</span>()
+  });
+}</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,16,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,16,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,16,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(16)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 17: Magnetic Button -->
+    <div class="effect-card" data-card="17">
+      <div class="preview-area">
+        <button class="magnetic-btn" id="magnetic-btn">MAGNETIC ✦</button>
+        <div class="preview-overlay" style="pointer-events:none"><span>↻ Di chuột vào button</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Magnetic Button</div>
+          <span class="card-category cat-button">BUTTON</span>
+        </div>
+        <p class="card-desc">Button bị hút về phía con trỏ chuột khi di chuyển gần. Dùng GSAP quick setter để update transform cực nhanh mà không lag.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',17)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',17)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',17)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-17-html"><span class="kw">&lt;button</span> <span class="prop">class</span>=<span class="str">"magnetic"</span><span class="kw">&gt;</span>
+  Hover Me
+<span class="kw">&lt;/button&gt;</span></pre>
+          <pre id="code-17-css" style="display:none"><span class="fn">.magnetic</span> {
+  <span class="prop">display</span>: <span class="str">inline-block</span>;
+  <span class="prop">will-change</span>: <span class="str">transform</span>;
+  <span class="prop">cursor</span>: <span class="str">pointer</span>;
+}</pre>
+          <pre id="code-17-js" style="display:none"><span class="kw">const</span> btn = <span class="fn">document</span>.<span class="fn">querySelector</span>(<span class="str">".magnetic"</span>);
+<span class="kw">const</span> setX = <span class="fn">gsap</span>.<span class="fn">quickSetter</span>(btn, <span class="str">"x"</span>, <span class="str">"px"</span>);
+<span class="kw">const</span> setY = <span class="fn">gsap</span>.<span class="fn">quickSetter</span>(btn, <span class="str">"y"</span>, <span class="str">"px"</span>);
+
+btn.<span class="fn">addEventListener</span>(<span class="str">"mousemove"</span>, e => {
+  <span class="kw">const</span> r = btn.<span class="fn">getBoundingClientRect</span>();
+  <span class="kw">const</span> cx = r.left + r.width / <span class="num">2</span>;
+  <span class="kw">const</span> cy = r.top + r.height / <span class="num">2</span>;
+  <span class="fn">setX</span>((e.clientX - cx) * <span class="num">0.4</span>);
+  <span class="fn">setY</span>((e.clientY - cy) * <span class="num">0.4</span>);
+});
+
+btn.<span class="fn">addEventListener</span>(<span class="str">"mouseleave"</span>, () => {
+  <span class="fn">gsap</span>.<span class="fn">to</span>(btn, { <span class="prop">x</span>: <span class="num">0</span>, <span class="prop">y</span>: <span class="num">0</span>, <span class="prop">duration</span>: <span class="num">0.4</span> });
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,17,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,17,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,17,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(17)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 18: Stagger List -->
+    <div class="effect-card" data-card="18">
+      <div class="preview-area" onclick="playCard(18)">
+        <div class="stagger-list" id="stagger-list">
+          <div class="stagger-item"><div class="stagger-dot"></div>Dashboard</div>
+          <div class="stagger-item"><div class="stagger-dot"></div>Analytics</div>
+          <div class="stagger-item"><div class="stagger-dot"></div>Settings</div>
+          <div class="stagger-item"><div class="stagger-dot"></div>Profile</div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để chạy lại</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Stagger List</div>
+          <span class="card-category cat-button">UI</span>
+        </div>
+        <p class="card-desc">Danh sách menu xuất hiện lần lượt từng item với stagger. Rất phổ biến cho navigation dropdown, mobile menu, và list reveals.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',18)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',18)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',18)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-18-html"><span class="kw">&lt;ul</span> <span class="prop">class</span>=<span class="str">"nav-list"</span><span class="kw">&gt;</span>
+  <span class="kw">&lt;li</span> <span class="prop">class</span>=<span class="str">"nav-item"</span><span class="kw">&gt;</span>Home<span class="kw">&lt;/li&gt;</span>
+  <span class="kw">&lt;li</span> <span class="prop">class</span>=<span class="str">"nav-item"</span><span class="kw">&gt;</span>About<span class="kw">&lt;/li&gt;</span>
+  <span class="kw">&lt;li</span> <span class="prop">class</span>=<span class="str">"nav-item"</span><span class="kw">&gt;</span>Work<span class="kw">&lt;/li&gt;</span>
+<span class="kw">&lt;/ul&gt;</span></pre>
+          <pre id="code-18-css" style="display:none"><span class="fn">.nav-item</span> {
+  <span class="prop">opacity</span>: <span class="num">0</span>;
+  <span class="prop">transform</span>: <span class="fn">translateX</span>(<span class="num">-20px</span>);
+}</pre>
+          <pre id="code-18-js" style="display:none"><span class="fn">gsap</span>.<span class="fn">to</span>(<span class="str">".nav-item"</span>, {
+  <span class="prop">opacity</span>: <span class="num">1</span>,
+  <span class="prop">x</span>: <span class="num">0</span>,
+  <span class="prop">duration</span>: <span class="num">0.4</span>,
+  <span class="prop">ease</span>: <span class="str">"power2.out"</span>,
+  <span class="prop">stagger</span>: <span class="num">0.08</span>,
+  <span class="prop">delay</span>: <span class="num">0.1</span>
+});</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,18,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,18,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,18,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(18)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 19: Shake Error -->
+    <div class="effect-card" data-card="19">
+      <div class="preview-area" onclick="playCard(19)" style="flex-direction:column;gap:12px">
+        <input id="shake-input" style="background:#16161e;border:2px solid #252535;border-radius:8px;padding:10px 16px;color:#e8e8f0;font-family:var(--font-mono);font-size:0.9rem;width:200px;outline:none;" placeholder="Nhập sai → Submit" readonly>
+        <button onclick="shakeError()" style="padding:8px 20px;background:var(--danger);border:none;border-radius:6px;color:white;font-family:var(--font-display);font-weight:700;cursor:pointer;font-size:0.85rem;">Submit</button>
+        <div class="preview-overlay" style="pointer-events:none"><span>↻ Click Submit để xem</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Shake Error Effect</div>
+          <span class="card-category cat-button">BUTTON</span>
+        </div>
+        <p class="card-desc">Input rung lắc khi có lỗi validation. Dùng GSAP keyframes x animation để tạo cảm giác phản hồi tự nhiên, thay thế alert box.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',19)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',19)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',19)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-19-html"><span class="kw">&lt;input</span> <span class="prop">id</span>=<span class="str">"field"</span> <span class="prop">type</span>=<span class="str">"text"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;button</span> <span class="prop">onclick</span>=<span class="str">"validate()"</span><span class="kw">&gt;</span>Submit<span class="kw">&lt;/button&gt;</span></pre>
+          <pre id="code-19-css" style="display:none"><span class="fn">#field</span> {
+  <span class="prop">border</span>: <span class="num">2px</span> <span class="str">solid #252535</span>;
+  <span class="prop">border-radius</span>: <span class="num">8px</span>;
+  <span class="prop">padding</span>: <span class="num">10px 16px</span>;
+}
+<span class="fn">#field.error</span> {
+  <span class="prop">border-color</span>: <span class="str">#f55252</span>;
+}</pre>
+          <pre id="code-19-js" style="display:none"><span class="kw">function</span> <span class="fn">validate</span>() {
+  <span class="kw">const</span> el = <span class="fn">document</span>.<span class="fn">getElementById</span>(<span class="str">"field"</span>);
+  el.classList.<span class="fn">add</span>(<span class="str">"error"</span>);
+  <span class="fn">gsap</span>.<span class="fn">to</span>(el, {
+    <span class="prop">keyframes</span>: {
+      <span class="prop">x</span>: [<span class="num">-10</span>, <span class="num">10</span>, <span class="num">-8</span>, <span class="num">8</span>, <span class="num">-4</span>, <span class="num">0</span>]
+    },
+    <span class="prop">duration</span>: <span class="num">0.5</span>,
+    <span class="prop">ease</span>: <span class="str">"power2.out"</span>
+  });
+  <span class="fn">setTimeout</span>(() => {
+    el.classList.<span class="fn">remove</span>(<span class="str">"error"</span>);
+  }, <span class="num">1500</span>);
+}</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,19,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,19,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,19,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(19)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD 20: Page Transition -->
+    <div class="effect-card" data-card="20">
+      <div class="preview-area" onclick="playCard(20)" style="overflow:hidden">
+        <div id="page-trans-overlay" style="position:absolute;inset:0;background:var(--accent);transform:scaleY(0);transform-origin:bottom;z-index:5;border-radius:4px"></div>
+        <div style="text-align:center;z-index:1">
+          <div style="font-family:var(--font-display);font-size:1.5rem;font-weight:700;color:var(--muted)">Page Content</div>
+          <div style="font-family:var(--font-mono);font-size:0.7rem;color:var(--border)">click to transition</div>
+        </div>
+        <div class="preview-overlay"><span>↻ Click để xem transition</span></div>
+      </div>
+      <div class="card-body">
+        <div class="card-header-row">
+          <div class="card-title">Page Transition</div>
+          <span class="card-category cat-scroll">TRANSITION</span>
+        </div>
+        <p class="card-desc">Overlay trượt vào rồi trượt ra để chuyển trang mượt mà. Kỹ thuật cổ điển trong web design dùng GSAP timeline với scaleY.</p>
+        <div class="code-tabs">
+          <button class="code-tab active" onclick="switchTab(this,'html',20)">HTML</button>
+          <button class="code-tab" onclick="switchTab(this,'css',20)">CSS</button>
+          <button class="code-tab" onclick="switchTab(this,'js',20)">JS</button>
+        </div>
+        <div class="code-block">
+          <pre id="code-20-html"><span class="kw">&lt;div</span> <span class="prop">id</span>=<span class="str">"overlay"</span><span class="kw">&gt;&lt;/div&gt;</span>
+<span class="kw">&lt;a</span> <span class="prop">onclick</span>=<span class="str">"navigate('/page')"</span><span class="kw">&gt;</span>
+  Go
+<span class="kw">&lt;/a&gt;</span></pre>
+          <pre id="code-20-css" style="display:none"><span class="fn">#overlay</span> {
+  <span class="prop">position</span>: <span class="str">fixed</span>;
+  <span class="prop">inset</span>: <span class="num">0</span>;
+  <span class="prop">background</span>: <span class="str">#7c6df5</span>;
+  <span class="prop">transform</span>: <span class="fn">scaleY</span>(<span class="num">0</span>);
+  <span class="prop">transform-origin</span>: <span class="str">bottom</span>;
+  <span class="prop">z-index</span>: <span class="num">9999</span>;
+}</pre>
+          <pre id="code-20-js" style="display:none"><span class="kw">function</span> <span class="fn">navigate</span>(url) {
+  <span class="kw">const</span> tl = <span class="fn">gsap</span>.<span class="fn">timeline</span>();
+  tl.<span class="fn">to</span>(<span class="str">"#overlay"</span>, {
+    <span class="prop">scaleY</span>: <span class="num">1</span>,
+    <span class="prop">duration</span>: <span class="num">0.6</span>,
+    <span class="prop">ease</span>: <span class="str">"power4.inOut"</span>,
+    <span class="prop">transformOrigin</span>: <span class="str">"bottom"</span>
+  })
+  .<span class="fn">call</span>(() => window.<span class="fn">location</span>.<span class="fn">href</span> = url)
+  .<span class="fn">to</span>(<span class="str">"#overlay"</span>, {
+    <span class="prop">scaleY</span>: <span class="num">0</span>,
+    <span class="prop">transformOrigin</span>: <span class="str">"top"</span>,
+    <span class="prop">duration</span>: <span class="num">0.6</span>,
+    <span class="prop">ease</span>: <span class="str">"power4.inOut"</span>
+  });
+}</pre>
+          <div class="code-actions">
+            <button class="copy-btn" onclick="copyCode(this,20,'html')">⧉ HTML</button>
+            <button class="copy-btn" onclick="copyCode(this,20,'css')">⧉ CSS</button>
+            <button class="copy-btn" onclick="copyCode(this,20,'js')">⧉ JS</button>
+            <button class="play-card-btn" onclick="playCard(20)">▶ Play</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- end container -->
+
+<!-- FIXED CONTROL BAR -->
+<div class="control-bar" id="control-bar">
+  <div class="ctrl-label">GSAP EFFECTS</div>
+  <div class="ctrl-divider"></div>
+  <button class="ctrl-btn" onclick="replayAll()" data-tip="Replay All">↻</button>
+  <button class="ctrl-btn primary" id="play-pause-btn" onclick="togglePlayPause()">⏸</button>
+  <button class="ctrl-btn" onclick="scrollToTop()" data-tip="Top">↑</button>
+  <div class="ctrl-divider"></div>
+  <div class="ctrl-label" id="playing-label">PLAYING</div>
+</div>
+
+<script>
+gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+let masterPaused = false;
+const tweens = {};
+
+// ============ INIT ALL EFFECTS ============
+
+function initAll() {
+  initHero();
+  initCard1();
+  initCard2();
+  initCard3();
+  initCard4();
+  initCard5();
+  initCard6();
+  initCard7();
+  initCard8();
+  initCard9();
+  initCard10();
+  initCard11();
+  initCard12();
+  initCard13();
+  initCard14();
+  initCard15();
+  initMagnetic();
+  initCard18();
+}
+
+// HERO
+function initHero() {
+  const tl = gsap.timeline();
+  tl.from("#hero-title", { y: 60, opacity: 0, duration: 1, ease: "power4.out" })
+    .from("#hero-desc", { y: 30, opacity: 0, duration: 0.7, ease: "power3.out" }, "-=0.5")
+    .from("#hero-stats .stat", { y: 20, opacity: 0, stagger: 0.1, duration: 0.5, ease: "power2.out" }, "-=0.3");
+
+  // count stats
+  const stats = [{id:"s1",val:20},{id:"s2",val:5},{id:"s3",val:100}];
+  stats.forEach(s => {
+    const obj = {v:0};
+    gsap.to(obj, {
+      v: s.val, duration: 2, delay: 0.8, ease: "power2.out",
+      onUpdate() { document.getElementById(s.id).textContent = Math.round(obj.v) + "+"; }
+    });
+  });
+}
+
+// CARD 1: Typewriter
+function initCard1() {
+  gsap.set("#typewriter-el", { text: "" });
+  const t = gsap.to("#typewriter-el", {
+    text: { value: "Hello, GSAP!", delimiter: "" },
+    duration: 1.8, ease: "none",
+    repeat: -1, repeatDelay: 1.5, yoyo: true
+  });
+  tweens[1] = t;
+}
+
+// CARD 2: Split
+function initCard2() {
+  gsap.set("#split-el span", { y: "100%", opacity: 0 });
+  const t = gsap.to("#split-el span", {
+    y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.7)", stagger: 0.05, delay: 0.3
+  });
+  tweens[2] = t;
+}
+
+// CARD 3: Glitch
+function initCard3() {
+  const el = document.getElementById("glitch-el");
+  const doGlitch = () => {
+    const tl = gsap.timeline({ onComplete: () => setTimeout(doGlitch, 2500) });
+    tl.set([el], {}, 0)
+      .to(el, { skewX: 10, duration: 0.05 })
+      .to(el, { skewX: -8, duration: 0.05 })
+      .to(el, { skewX: 0, duration: 0.05 })
+      .to(el, { x: -4, color: "#ff0077", duration: 0.08 }, "-=0.1")
+      .to(el, { x: 4, color: "#00ffff", duration: 0.08 })
+      .to(el, { x: 0, color: "var(--text)", duration: 0.08 });
+    tweens[3] = tl;
+  };
+  doGlitch();
+}
+
+// CARD 4: Gradient
+function initCard4() {
+  const t = gsap.to("#gradient-el", {
+    backgroundPosition: "200% 200%", duration: 3,
+    ease: "sine.inOut", repeat: -1, yoyo: true
+  });
+  tweens[4] = t;
+}
+
+// CARD 5: Word by word
+function initCard5() {
+  gsap.set(".wbw-word", { opacity: 0, y: 20 });
+  const t = gsap.to(".wbw-word", {
+    opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.15
+  });
+  tweens[5] = t;
+}
+
+// CARD 6: Counter
+function initCard6() {
+  const obj = { val: 0 };
+  const t = gsap.to(obj, {
+    val: 9999, duration: 2.5, ease: "power2.out",
+    onUpdate() { document.getElementById("counter-el").textContent = Math.round(obj.val).toLocaleString(); }
+  });
+  tweens[6] = t;
+}
+
+// CARD 7: Image reveal
+function initCard7() {
+  const wrap = document.getElementById("img-reveal-wrap");
+  const img = document.getElementById("img-reveal-img");
+
+  // Create overlay div
+  let ov = wrap.querySelector(".reveal-ov");
+  if (!ov) {
+    ov = document.createElement("div");
+    ov.className = "reveal-ov";
+    ov.style.cssText = "position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;z-index:2;border-radius:8px;";
+    wrap.appendChild(ov);
+  }
+
+  gsap.set(ov, { scaleX: 0, transformOrigin: "left" });
+  gsap.set(img, { scale: 1.15, opacity: 0 });
+
+  const tl = gsap.timeline();
+  tl.to(ov, { scaleX: 1, duration: 0.5, ease: "power4.inOut" })
+    .to(img, { opacity: 1, duration: 0.01 })
+    .to(ov, { scaleX: 0, transformOrigin: "right", duration: 0.5, ease: "power4.inOut" })
+    .to(img, { scale: 1, duration: 0.6 }, "-=0.3");
+  tweens[7] = tl;
+}
+
+// CARD 8: Clip path
+function initCard8() {
+  gsap.set("#clip-el", { clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" });
+  const t = gsap.to("#clip-el", {
+    clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+    duration: 1, ease: "power4.inOut"
+  });
+  tweens[8] = t;
+}
+
+// CARD 9: Float
+function initCard9() {
+  const t = gsap.to("#float-cards .float-card", {
+    y: "-=16", duration: 2, ease: "sine.inOut",
+    repeat: -1, yoyo: true,
+    stagger: { each: 0.3, from: "start" }
+  });
+  tweens[9] = t;
+}
+
+// CARD 10: Scale bounce
+function initCard10() {
+  gsap.set("#scale-el", { scale: 0, opacity: 0 });
+  const t = gsap.to("#scale-el", {
+    scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)", delay: 0.2
+  });
+  tweens[10] = t;
+}
+
+// CARD 11: Bars
+function initCard11() {
+  const bars = document.querySelectorAll("#loader-bars .loader-bar");
+  const t = gsap.to(bars, {
+    height: () => gsap.utils.random(12, 52),
+    duration: 0.35, ease: "power1.inOut",
+    repeat: -1, yoyo: true,
+    stagger: { each: 0.07, repeat: -1, yoyo: true }
+  });
+  tweens[11] = t;
+}
+
+// CARD 12: Spinner
+function initCard12() {
+  const t = gsap.to("#spinner-el", {
+    rotation: 360, duration: 1, ease: "none", repeat: -1
+  });
+  tweens[12] = t;
+}
+
+// CARD 13: Progress
+function initCard13() {
+  const p = { val: 0 };
+  const t = gsap.to(p, {
+    val: 100, duration: 2.5, ease: "power2.inOut",
+    onUpdate() {
+      const v = Math.round(p.val);
+      document.getElementById("progress-fill").style.width = v + "%";
+      document.getElementById("progress-pct").textContent = v + "%";
+    }
+  });
+  tweens[13] = t;
+}
+
+// CARD 14: Scroll items
+function initCard14() {
+  const items = document.querySelectorAll("#scroll-items .scroll-item");
+  gsap.set(items, { opacity: 0, x: -40 });
+  const t = gsap.to(items, {
+    opacity: 1, x: 0, duration: 0.6, ease: "power3.out", stagger: 0.12
+  });
+  tweens[14] = t;
+}
+
+// CARD 15: Scroll scale
+function initCard15() {
+  gsap.set("#scroll-scale-el", { scale: 0.5, opacity: 0 });
+  const t = gsap.to("#scroll-scale-el", {
+    scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)", delay: 0.3
+  });
+  tweens[15] = t;
+}
+
+// MAGNETIC
+function initMagnetic() {
+  const btn = document.getElementById("magnetic-btn");
+  const setX = gsap.quickSetter(btn, "x", "px");
+  const setY = gsap.quickSetter(btn, "y", "px");
+  btn.addEventListener("mousemove", e => {
+    const r = btn.getBoundingClientRect();
+    setX((e.clientX - (r.left + r.width / 2)) * 0.4);
+    setY((e.clientY - (r.top + r.height / 2)) * 0.4);
+  });
+  btn.addEventListener("mouseleave", () => {
+    gsap.to(btn, { x: 0, y: 0, duration: 0.4, ease: "elastic.out(1,0.5)" });
+  });
+}
+
+// CARD 18: Stagger
+function initCard18() {
+  const items = document.querySelectorAll("#stagger-list .stagger-item");
+  gsap.set(items, { opacity: 0, x: -20 });
+  const t = gsap.to(items, {
+    opacity: 1, x: 0, duration: 0.4, ease: "power2.out", stagger: 0.08
+  });
+  tweens[18] = t;
+}
+
+// ============ PLAY SPECIFIC CARD ============
+function playCard(n) {
+  switch(n) {
+    case 1:
+      if(tweens[1]) tweens[1].kill();
+      gsap.set("#typewriter-el", { text: "" });
+      tweens[1] = gsap.to("#typewriter-el", {
+        text: { value: "Hello, GSAP!", delimiter: "" },
+        duration: 1.8, ease: "none", repeat: -1, repeatDelay: 1.5, yoyo: true
+      });
+      break;
+    case 2:
+      gsap.set("#split-el span", { y: "100%", opacity: 0 });
+      tweens[2] = gsap.to("#split-el span", { y: 0, opacity: 1, duration: 0.6, ease: "back.out(1.7)", stagger: 0.05 });
+      break;
+    case 3:
+      const el = document.getElementById("glitch-el");
+      const tl3 = gsap.timeline();
+      tl3.to(el, { skewX: 12, duration: 0.05 })
+         .to(el, { x: -5, color: "#ff0077", duration: 0.08 })
+         .to(el, { x: 5, color: "#00ffff", duration: 0.08 })
+         .to(el, { x: 0, skewX: 0, color: "var(--text)", duration: 0.1 });
+      break;
+    case 4:
+      gsap.set("#gradient-el", { backgroundPosition: "0% 0%" });
+      if(tweens[4]) tweens[4].kill();
+      tweens[4] = gsap.to("#gradient-el", { backgroundPosition: "200% 200%", duration: 3, ease: "sine.inOut", repeat: -1, yoyo: true });
+      break;
+    case 5:
+      gsap.set(".wbw-word", { opacity: 0, y: 20 });
+      gsap.to(".wbw-word", { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.15 });
+      break;
+    case 6:
+      const obj6 = { val: 0 };
+      gsap.killTweensOf(obj6);
+      document.getElementById("counter-el").textContent = "0";
+      gsap.to(obj6, {
+        val: 9999, duration: 2.5, ease: "power2.out",
+        onUpdate() { document.getElementById("counter-el").textContent = Math.round(obj6.val).toLocaleString(); }
+      });
+      break;
+    case 7:
+      initCard7();
+      break;
+    case 8:
+      gsap.set("#clip-el", { clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" });
+      gsap.to("#clip-el", { clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", duration: 1, ease: "power4.inOut" });
+      break;
+    case 9:
+      if(tweens[9]) tweens[9].kill();
+      gsap.set("#float-cards .float-card", { y: 0 });
+      tweens[9] = gsap.to("#float-cards .float-card", {
+        y: "-=16", duration: 2, ease: "sine.inOut", repeat: -1, yoyo: true, stagger: { each: 0.3 }
+      });
+      break;
+    case 10:
+      gsap.set("#scale-el", { scale: 0, opacity: 0 });
+      gsap.to("#scale-el", { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)" });
+      break;
+    case 11:
+      if(tweens[11]) tweens[11].kill();
+      tweens[11] = gsap.to("#loader-bars .loader-bar", {
+        height: () => gsap.utils.random(12, 52), duration: 0.35, ease: "power1.inOut",
+        repeat: -1, yoyo: true, stagger: { each: 0.07, repeat: -1, yoyo: true }
+      });
+      break;
+    case 12:
+      if(tweens[12]) tweens[12].kill();
+      tweens[12] = gsap.to("#spinner-el", { rotation: 360, duration: 1, ease: "none", repeat: -1 });
+      break;
+    case 13:
+      const p13 = { val: 0 };
+      document.getElementById("progress-fill").style.width = "0%";
+      document.getElementById("progress-pct").textContent = "0%";
+      gsap.to(p13, {
+        val: 100, duration: 2.5, ease: "power2.inOut",
+        onUpdate() {
+          const v = Math.round(p13.val);
+          document.getElementById("progress-fill").style.width = v + "%";
+          document.getElementById("progress-pct").textContent = v + "%";
+        }
+      });
+      break;
+    case 14:
+      gsap.set("#scroll-items .scroll-item", { opacity: 0, x: -40 });
+      gsap.to("#scroll-items .scroll-item", { opacity: 1, x: 0, duration: 0.6, ease: "power3.out", stagger: 0.12 });
+      break;
+    case 15:
+      gsap.set("#scroll-scale-el", { scale: 0.5, opacity: 0 });
+      gsap.to("#scroll-scale-el", { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.4)" });
+      break;
+    case 16:
+      const btn16 = document.getElementById("ripple-btn");
+      const r16 = document.createElement("div");
+      r16.style.cssText = "position:absolute;border-radius:50%;background:rgba(124,109,245,0.4);pointer-events:none;";
+      const size16 = 200;
+      gsap.set(r16, { width: size16, height: size16, x: -40, y: -40, scale: 0 });
+      btn16.appendChild(r16);
+      gsap.to(r16, { scale: 1, opacity: 0, duration: 0.6, ease: "power2.out", onComplete: () => r16.remove() });
+      break;
+    case 18:
+      gsap.set("#stagger-list .stagger-item", { opacity: 0, x: -20 });
+      gsap.to("#stagger-list .stagger-item", { opacity: 1, x: 0, duration: 0.4, ease: "power2.out", stagger: 0.08 });
+      break;
+    case 19:
+      shakeError();
+      break;
+    case 20:
+      pageTransDemo();
+      break;
+  }
+}
+
+// RIPPLE
+function rippleEffect(e) {
+  const btn = e.currentTarget;
+  const r = document.createElement("div");
+  r.style.cssText = "position:absolute;border-radius:50%;background:rgba(124,109,245,0.4);pointer-events:none;";
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  gsap.set(r, { width: size, height: size, x: e.clientX - rect.left - size/2, y: e.clientY - rect.top - size/2, scale: 0 });
+  btn.appendChild(r);
+  gsap.to(r, { scale: 1, opacity: 0, duration: 0.6, ease: "power2.out", onComplete: () => r.remove() });
+}
+
+// SHAKE
+function shakeError() {
+  const el = document.getElementById("shake-input");
+  el.style.borderColor = "var(--danger)";
+  gsap.to(el, {
+    keyframes: { x: [-10, 10, -8, 8, -4, 4, 0] },
+    duration: 0.5, ease: "power2.out",
+    onComplete() { setTimeout(() => { el.style.borderColor = "var(--border)"; }, 800); }
+  });
+}
+
+// PAGE TRANS DEMO
+function pageTransDemo() {
+  const ov = document.getElementById("page-trans-overlay");
+  gsap.set(ov, { scaleY: 0, transformOrigin: "bottom" });
+  const tl = gsap.timeline();
+  tl.to(ov, { scaleY: 1, duration: 0.5, ease: "power4.inOut" })
+    .to(ov, { scaleY: 0, transformOrigin: "top", duration: 0.5, ease: "power4.inOut", delay: 0.2 });
+}
+
+// ============ GLOBAL CONTROLS ============
+function togglePlayPause() {
+  masterPaused = !masterPaused;
+  const btn = document.getElementById("play-pause-btn");
+  const label = document.getElementById("playing-label");
+  if (masterPaused) {
+    gsap.globalTimeline.pause();
+    btn.textContent = "▶";
+    label.textContent = "PAUSED";
+    label.style.color = "var(--accent2)";
+  } else {
+    gsap.globalTimeline.resume();
+    btn.textContent = "⏸";
+    label.textContent = "PLAYING";
+    label.style.color = "var(--muted)";
+  }
+}
+
+function replayAll() {
+  gsap.globalTimeline.resume();
+  masterPaused = false;
+  document.getElementById("play-pause-btn").textContent = "⏸";
+  document.getElementById("playing-label").textContent = "PLAYING";
+  document.getElementById("playing-label").style.color = "var(--muted)";
+
+  // Replay each
+  for (let i = 1; i <= 20; i++) {
+    setTimeout(() => { try { playCard(i); } catch(e) {} }, i * 80);
+  }
+}
+
+function scrollToTop() {
+  gsap.to(window, { scrollTo: 0, duration: 1, ease: "power3.inOut" });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// ============ TABS ============
+function switchTab(btn, type, n) {
+  const card = btn.closest(".effect-card");
+  card.querySelectorAll(".code-tab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  ["html","css","js"].forEach(t => {
+    const el = document.getElementById(`code-${n}-${t}`);
+    if (el) el.style.display = t === type ? "block" : "none";
+  });
+}
+
+// ============ COPY ============
+function getPlainText(preId) {
+  const pre = document.getElementById(preId);
+  return pre ? pre.innerText : "";
+}
+
+function copyCode(btn, cardN, type) {
+  const text = getPlainText(`code-${cardN}-${type}`);
+  navigator.clipboard.writeText(text).then(() => {
+    btn.classList.add("copied");
+    const orig = btn.textContent;
+    btn.textContent = "✓ Copied!";
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 1500);
+  });
+}
+
+// ============ CONTROL BAR ENTRANCE ============
+gsap.from("#control-bar", { y: 100, opacity: 0, duration: 0.8, delay: 1.5, ease: "back.out(1.7)" });
+
+// ============ START ============
+window.addEventListener("load", initAll);
+</script>
+</body>
+</html>

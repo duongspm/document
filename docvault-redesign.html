@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DocVault — Kho Tài Liệu Lập Trình & Code Snippet Mở</title>
+  <meta name="description" content="DocVault là kho tài liệu lập trình mã nguồn mở: hướng dẫn, code snippet, demo trực tiếp về HTML, CSS, JavaScript, React, Node.js và hơn thế nữa." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080810;
+      --bg2:      #0d0d1a;
+      --bg3:      #111124;
+      --surface:  #16162a;
+      --border:   rgba(120,120,255,0.12);
+      --border2:  rgba(120,120,255,0.22);
+      --accent:   #7b6cff;
+      --accent2:  #00e5ff;
+      --accent3:  #ff6b9d;
+      --text:     #e8e8f5;
+      --muted:    #888aaa;
+      --dim:      #44466a;
+      --mono:     'Space Mono', monospace;
+      --display:  'Syne', sans-serif;
+      --body:     'Inter', sans-serif;
+      --r:        12px;
+      --r2:       20px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 15px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 99px; }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(1.2rem,4vw,3rem);
+      height: 64px;
+      background: rgba(8,8,16,0.75);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--display);
+      font-weight: 800; font-size: 1.25rem;
+      color: var(--text);
+      text-decoration: none;
+      display: flex; align-items: center; gap: .4rem;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 1.8rem; }
+    .nav-links a {
+      font-family: var(--mono); font-size: .72rem;
+      color: var(--muted); text-decoration: none;
+      letter-spacing: .06em; text-transform: uppercase;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent);
+      color: #fff !important;
+      padding: .45rem 1.1rem;
+      border-radius: 6px;
+      font-size: .72rem !important;
+    }
+    .nav-cta:hover { background: #9488ff !important; color: #fff !important; }
+    .hamburger { display: none; background: none; border: none; cursor: pointer; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text); margin: 4px 0; border-radius: 2px; }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 7rem clamp(1.2rem,5vw,4rem) 5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+    }
+    .glow-1 { width: 600px; height: 600px; top: -200px; left: -200px; background: rgba(123,108,255,.18); }
+    .glow-2 { width: 500px; height: 500px; bottom: -150px; right: -150px; background: rgba(0,229,255,.12); }
+    .glow-3 { width: 300px; height: 300px; top: 40%; left: 50%; transform: translate(-50%,-50%); background: rgba(255,107,157,.08); }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-family: var(--mono); font-size: .7rem;
+      color: var(--accent2); letter-spacing: .1em; text-transform: uppercase;
+      border: 1px solid rgba(0,229,255,.25);
+      padding: .35rem .9rem; border-radius: 99px;
+      margin-bottom: 2rem;
+      animation: fadeUp .6s ease both;
+    }
+    .hero-badge::before { content: ''; width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.6)} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .hero h1 {
+      font-family: var(--display);
+      font-size: clamp(2.8rem, 7vw, 6.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -.02em;
+      max-width: 900px;
+      animation: fadeUp .7s .1s ease both;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero h1 .cyan { color: var(--accent2); }
+
+    .hero-sub {
+      margin-top: 1.5rem;
+      font-size: clamp(.95rem,2vw,1.15rem);
+      color: var(--muted);
+      max-width: 540px;
+      animation: fadeUp .7s .2s ease both;
+    }
+
+    .hero-actions {
+      display: flex; gap: 1rem; margin-top: 2.5rem;
+      flex-wrap: wrap; justify-content: center;
+      animation: fadeUp .7s .3s ease both;
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .75rem 1.8rem;
+      border-radius: 8px;
+      font-family: var(--mono); font-size: .8rem;
+      font-weight: 700; letter-spacing: .04em;
+      text-decoration: none; cursor: pointer; border: none;
+      transition: all .22s;
+    }
+    .btn-primary {
+      background: var(--accent); color: #fff;
+      box-shadow: 0 0 30px rgba(123,108,255,.35);
+    }
+    .btn-primary:hover { background: #9488ff; transform: translateY(-2px); box-shadow: 0 0 40px rgba(123,108,255,.5); }
+    .btn-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border2);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    .hero-stats {
+      display: flex; gap: 3rem; margin-top: 4rem;
+      animation: fadeUp .7s .4s ease both;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat strong {
+      display: block;
+      font-family: var(--display); font-size: 2rem; font-weight: 800;
+      color: var(--text);
+    }
+    .hero-stat span { font-family: var(--mono); font-size: .7rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+
+    /* ── TICKER ── */
+    .ticker {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden; height: 40px;
+      display: flex; align-items: center;
+    }
+    .ticker-inner {
+      display: flex; gap: 0;
+      animation: ticker 22s linear infinite;
+      white-space: nowrap;
+    }
+    .ticker-item {
+      font-family: var(--mono); font-size: .7rem;
+      color: var(--muted); letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 0 2.5rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .ticker-item::before { content: '◆'; color: var(--accent); font-size: .5rem; }
+    @keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* ── SECTION BASE ── */
+    section { padding: clamp(4rem,8vw,7rem) clamp(1.2rem,5vw,4rem); }
+    .section-label {
+      font-family: var(--mono); font-size: .68rem;
+      color: var(--accent); letter-spacing: .14em; text-transform: uppercase;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .6rem;
+    }
+    .section-label::before { content: '//'; opacity: .5; }
+    .section-title {
+      font-family: var(--display);
+      font-size: clamp(1.8rem,4vw,3rem);
+      font-weight: 800; line-height: 1.1;
+      letter-spacing: -.02em;
+    }
+    .section-title em { font-style: normal; color: var(--accent); }
+    .section-desc {
+      margin-top: .8rem;
+      color: var(--muted); font-size: .95rem;
+      max-width: 520px;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    /* ── SEARCH BAR ── */
+    .search-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 2.5rem clamp(1.2rem,5vw,4rem);
+    }
+    .search-wrap {
+      max-width: 700px; margin: 0 auto;
+      position: relative;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 1rem 1.2rem 1rem 3.2rem;
+      color: var(--text);
+      font-family: var(--mono); font-size: .9rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(123,108,255,.15);
+    }
+    .search-input::placeholder { color: var(--dim); }
+    .search-icon {
+      position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+      color: var(--dim); font-size: 1rem; pointer-events: none;
+    }
+    .search-tags { display: flex; gap: .5rem; margin-top: 1rem; flex-wrap: wrap; justify-content: center; }
+    .search-tag {
+      font-family: var(--mono); font-size: .65rem;
+      color: var(--muted); border: 1px solid var(--border);
+      padding: .25rem .7rem; border-radius: 99px; cursor: pointer;
+      text-transform: uppercase; letter-spacing: .06em;
+      transition: all .2s;
+    }
+    .search-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── CATEGORIES ── */
+    .categories { background: var(--bg); }
+    .cats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem; margin-top: 2.5rem;
+    }
+    .cat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all .25s;
+      position: relative; overflow: hidden;
+    }
+    .cat-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity .25s;
+      background: radial-gradient(circle at 50% 0%, rgba(123,108,255,.12), transparent 70%);
+    }
+    .cat-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .cat-card:hover::before { opacity: 1; }
+    .cat-icon { font-size: 1.8rem; margin-bottom: .75rem; }
+    .cat-name { font-family: var(--display); font-weight: 700; font-size: .95rem; }
+    .cat-count { font-family: var(--mono); font-size: .68rem; color: var(--muted); margin-top: .25rem; letter-spacing: .06em; }
+    .cat-bar { height: 2px; background: var(--border); border-radius: 99px; margin-top: .8rem; }
+    .cat-bar-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .6s; }
+
+    /* ── FEATURED DOCS ── */
+    .featured { background: var(--bg2); }
+    .docs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.2rem; margin-top: 2.5rem;
+    }
+    .doc-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.5rem;
+      transition: all .25s;
+      display: flex; flex-direction: column;
+      position: relative; overflow: hidden;
+    }
+    .doc-card:hover { border-color: rgba(123,108,255,.4); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+    .doc-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .doc-lang {
+      font-family: var(--mono); font-size: .63rem;
+      color: var(--accent); border: 1px solid rgba(123,108,255,.3);
+      padding: .2rem .6rem; border-radius: 4px; letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+    .doc-demo-badge {
+      font-family: var(--mono); font-size: .6rem;
+      background: rgba(0,229,255,.1); color: var(--accent2);
+      border: 1px solid rgba(0,229,255,.2);
+      padding: .2rem .6rem; border-radius: 4px;
+    }
+    .doc-title { font-family: var(--display); font-weight: 700; font-size: 1.05rem; line-height: 1.3; margin-bottom: .5rem; }
+    .doc-desc { font-size: .85rem; color: var(--muted); flex: 1; line-height: 1.6; }
+    .doc-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1.2rem; padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .doc-meta { display: flex; gap: 1rem; }
+    .doc-meta span { font-family: var(--mono); font-size: .65rem; color: var(--dim); display: flex; align-items: center; gap: .3rem; }
+    .doc-tags { display: flex; gap: .4rem; flex-wrap: wrap; }
+    .tag {
+      font-family: var(--mono); font-size: .6rem;
+      color: var(--muted); background: rgba(255,255,255,.04);
+      padding: .15rem .5rem; border-radius: 4px;
+    }
+    .doc-card.hot { border-color: rgba(255,107,157,.25); }
+    .doc-card.hot:hover { border-color: rgba(255,107,157,.5); }
+    .doc-card.hot .doc-lang { color: var(--accent3); border-color: rgba(255,107,157,.3); }
+
+    /* ── HOW IT WORKS ── */
+    .how { background: var(--bg); }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1.5rem; margin-top: 3rem; }
+    .step {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 2rem 1.5rem;
+      transition: border-color .25s;
+    }
+    .step:hover { border-color: var(--border2); }
+    .step-num {
+      font-family: var(--mono); font-size: 3.5rem; font-weight: 700;
+      color: var(--border2); line-height: 1;
+      position: absolute; top: 1rem; right: 1.2rem;
+    }
+    .step-icon { font-size: 1.6rem; margin-bottom: 1rem; }
+    .step-title { font-family: var(--display); font-weight: 700; font-size: 1.05rem; margin-bottom: .5rem; }
+    .step-desc { font-size: .85rem; color: var(--muted); }
+    .step-connector {
+      display: none;
+    }
+
+    /* ── TIMELINE ── */
+    .timeline-section { background: var(--bg2); }
+    .timeline {
+      position: relative;
+      margin-top: 3rem;
+      max-width: 800px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 80px; top: 0; bottom: 0;
+      width: 1px; background: var(--border2);
+    }
+    .tl-item {
+      display: flex; gap: 2rem;
+      margin-bottom: 2.5rem;
+      position: relative;
+    }
+    .tl-year {
+      min-width: 60px;
+      font-family: var(--mono); font-size: .7rem;
+      color: var(--accent); font-weight: 700;
+      letter-spacing: .06em;
+      padding-top: .1rem;
+      text-align: right;
+    }
+    .tl-dot {
+      position: absolute; left: 74px; top: .4rem;
+      width: 14px; height: 14px;
+      background: var(--bg); border: 2px solid var(--accent);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    .tl-dot.active { background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+    .tl-content {
+      padding-left: 1.5rem; flex: 1;
+    }
+    .tl-role { font-family: var(--mono); font-size: .65rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: .35rem; }
+    .tl-title { font-family: var(--display); font-weight: 700; font-size: 1.05rem; margin-bottom: .4rem; }
+    .tl-desc { font-size: .85rem; color: var(--muted); }
+    .tl-techs { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .6rem; }
+    .tl-tech {
+      font-family: var(--mono); font-size: .6rem;
+      background: rgba(123,108,255,.1); color: var(--accent);
+      border: 1px solid rgba(123,108,255,.2);
+      padding: .15rem .55rem; border-radius: 4px;
+    }
+
+    /* ── FEATURES ── */
+    .features { background: var(--bg); }
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+      gap: 1.2rem; margin-top: 3rem;
+    }
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r2);
+      padding: 1.8rem;
+      transition: all .25s;
+    }
+    .feat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+    .feat-icon-wrap {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .feat-icon-wrap.purple { background: rgba(123,108,255,.15); }
+    .feat-icon-wrap.cyan   { background: rgba(0,229,255,.12); }
+    .feat-icon-wrap.pink   { background: rgba(255,107,157,.12); }
+    .feat-icon-wrap.green  { background: rgba(0,230,150,.1); }
+    .feat-title { font-family: var(--display); font-weight: 700; font-size: 1rem; margin-bottom: .4rem; }
+    .feat-desc { font-size: .85rem; color: var(--muted); }
+
+    /* ── STATS BANNER ── */
+    .stats-banner {
+      background: linear-gradient(135deg, rgba(123,108,255,.12), rgba(0,229,255,.06));
+      border: 1px solid var(--border2);
+      border-radius: var(--r2);
+      padding: 3rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+      gap: 2rem;
+      text-align: center;
+      margin: 3rem 0;
+    }
+    .stat-item strong {
+      display: block;
+      font-family: var(--display); font-size: 2.8rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .stat-item span { font-family: var(--mono); font-size: .68rem; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: var(--bg2);
+      text-align: center;
+      padding: clamp(4rem,8vw,7rem) clamp(1.2rem,5vw,4rem);
+    }
+    .cta-box {
+      max-width: 680px; margin: 0 auto;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 24px;
+      padding: clamp(2.5rem,5vw,4rem);
+      position: relative; overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+      width: 300px; height: 200px;
+      background: radial-gradient(circle, rgba(123,108,255,.25), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-box h2 { font-family: var(--display); font-size: clamp(1.6rem,3.5vw,2.5rem); font-weight: 800; margin-bottom: .8rem; }
+    .cta-box p { color: var(--muted); font-size: .95rem; margin-bottom: 2rem; }
+    .email-form { display: flex; gap: .5rem; max-width: 420px; margin: 0 auto; }
+    .email-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      color: var(--text);
+      font-family: var(--mono); font-size: .8rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .email-input:focus { border-color: var(--accent); }
+    .email-input::placeholder { color: var(--dim); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 3rem clamp(1.2rem,5vw,4rem) 2rem;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 3rem;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .footer-brand p { font-size: .85rem; color: var(--muted); margin-top: .8rem; max-width: 260px; line-height: 1.7; }
+    .footer-col h4 { font-family: var(--mono); font-size: .68rem; color: var(--text); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 1rem; }
+    .footer-col a { display: block; font-size: .85rem; color: var(--muted); text-decoration: none; margin-bottom: .5rem; transition: color .2s; }
+    .footer-col a:hover { color: var(--text); }
+    .footer-bottom {
+      max-width: 1200px; margin: 2.5rem auto 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-bottom p { font-family: var(--mono); font-size: .65rem; color: var(--dim); letter-spacing: .05em; }
+    .footer-socials { display: flex; gap: 1rem; }
+    .social-btn {
+      width: 34px; height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--muted); font-size: .8rem;
+      text-decoration: none; transition: all .2s;
+    }
+    .social-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── MOBILE NAV ── */
+    .mobile-nav {
+      display: none;
+      position: fixed; inset: 0; z-index: 99;
+      background: rgba(8,8,16,.98);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 2rem;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      font-family: var(--display); font-size: 1.4rem; font-weight: 700;
+      color: var(--text); text-decoration: none;
+      transition: color .2s;
+    }
+    .mobile-nav a:hover { color: var(--accent); }
+    .mobile-close {
+      position: absolute; top: 1.2rem; right: 1.5rem;
+      background: none; border: none; color: var(--text);
+      font-size: 1.5rem; cursor: pointer;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: block; }
+      .timeline::before { left: 50px; }
+      .tl-year { min-width: 40px; font-size: .62rem; }
+      .tl-dot { left: 44px; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .email-form { flex-direction: column; }
+    }
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+      .hero-stats { gap: 1.5rem; }
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(28px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+    .reveal-delay-4 { transition-delay: .4s; }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="#" class="nav-logo">⚡ Doc<span>Vault</span></a>
+  <div class="nav-links">
+    <a href="#docs">Tài liệu</a>
+    <a href="#categories">Danh mục</a>
+    <a href="#about">Về tôi</a>
+    <a href="#features">Tính năng</a>
+    <a href="https://duongspm.github.io/document/admin.html" class="nav-cta">Admin ↗</a>
+  </div>
+  <button class="hamburger" onclick="document.getElementById('mobileNav').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ── MOBILE NAV ── -->
+<div class="mobile-nav" id="mobileNav">
+  <button class="mobile-close" onclick="document.getElementById('mobileNav').classList.remove('open')">✕</button>
+  <a href="#docs" onclick="document.getElementById('mobileNav').classList.remove('open')">Tài liệu</a>
+  <a href="#categories" onclick="document.getElementById('mobileNav').classList.remove('open')">Danh mục</a>
+  <a href="#about" onclick="document.getElementById('mobileNav').classList.remove('open')">Về tôi</a>
+  <a href="#features" onclick="document.getElementById('mobileNav').classList.remove('open')">Tính năng</a>
+  <a href="https://duongspm.github.io/document/admin.html">Admin ↗</a>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero" id="home">
+  <div class="hero-glow glow-1"></div>
+  <div class="hero-glow glow-2"></div>
+  <div class="hero-glow glow-3"></div>
+
+  <div class="hero-badge">✦ Mã nguồn mở · Knowledge Hub</div>
+
+  <h1>Kho <em>tri thức</em> dành cho<br/><span class="cyan">lập trình viên</span></h1>
+  <p class="hero-sub">Tài liệu kỹ thuật, code snippet, hướng dẫn và demo trực tiếp — được tổ chức thông minh, tìm kiếm tức thì.</p>
+
+  <div class="hero-actions">
+    <a href="#docs" class="btn btn-primary">⚡ Khám phá tài liệu</a>
+    <a href="https://github.com/duongspm" class="btn btn-ghost" target="_blank" rel="noopener">↗ GitHub</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat"><strong id="stat1">0</strong><span>Tài liệu</span></div>
+    <div class="hero-stat"><strong id="stat2">0</strong><span>Tags</span></div>
+    <div class="hero-stat"><strong id="stat3">0</strong><span>Có Demo</span></div>
+    <div class="hero-stat"><strong>99.9%</strong><span>Uptime</span></div>
+  </div>
+</section>
+
+<!-- ── TICKER ── -->
+<div class="ticker">
+  <div class="ticker-inner" id="tickerInner">
+    <div class="ticker-item">DocVault System</div>
+    <div class="ticker-item">Open Source</div>
+    <div class="ticker-item">Knowledge Hub</div>
+    <div class="ticker-item">Code Snippets</div>
+    <div class="ticker-item">Live Demo</div>
+    <div class="ticker-item">JavaScript</div>
+    <div class="ticker-item">React</div>
+    <div class="ticker-item">Node.js</div>
+    <div class="ticker-item">Firebase</div>
+    <div class="ticker-item">Free Forever</div>
+    <div class="ticker-item">DocVault System</div>
+    <div class="ticker-item">Open Source</div>
+    <div class="ticker-item">Knowledge Hub</div>
+    <div class="ticker-item">Code Snippets</div>
+    <div class="ticker-item">Live Demo</div>
+    <div class="ticker-item">JavaScript</div>
+    <div class="ticker-item">React</div>
+    <div class="ticker-item">Node.js</div>
+    <div class="ticker-item">Firebase</div>
+    <div class="ticker-item">Free Forever</div>
+  </div>
+</div>
+
+<!-- ── SEARCH ── -->
+<div class="search-section">
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input class="search-input" type="text" placeholder="Tìm kiếm tài liệu, snippet, tutorial..." />
+  </div>
+  <div class="search-tags">
+    <span class="search-tag">JavaScript</span>
+    <span class="search-tag">CSS</span>
+    <span class="search-tag">React</span>
+    <span class="search-tag">Node.js</span>
+    <span class="search-tag">Firebase</span>
+    <span class="search-tag">Algorithm</span>
+    <span class="search-tag">Git</span>
+    <span class="search-tag">API</span>
+  </div>
+</div>
+
+<!-- ── CATEGORIES ── -->
+<section class="categories" id="categories">
+  <div class="container">
+    <div class="section-label reveal">Danh mục</div>
+    <div class="section-title reveal reveal-delay-1">Khám phá theo <em>chủ đề</em></div>
+    <p class="section-desc reveal reveal-delay-2">Tài liệu được phân loại rõ ràng theo ngôn ngữ, framework và lĩnh vực.</p>
+
+    <div class="cats-grid">
+      <div class="cat-card reveal">
+        <div class="cat-icon">⚡</div>
+        <div class="cat-name">JavaScript</div>
+        <div class="cat-count">48 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:80%"></div></div>
+      </div>
+      <div class="cat-card reveal reveal-delay-1">
+        <div class="cat-icon">⚛️</div>
+        <div class="cat-name">React</div>
+        <div class="cat-count">32 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:60%"></div></div>
+      </div>
+      <div class="cat-card reveal reveal-delay-2">
+        <div class="cat-icon">🎨</div>
+        <div class="cat-name">CSS / UI</div>
+        <div class="cat-count">27 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:50%"></div></div>
+      </div>
+      <div class="cat-card reveal reveal-delay-3">
+        <div class="cat-icon">🖥️</div>
+        <div class="cat-name">Node.js</div>
+        <div class="cat-count">21 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:40%"></div></div>
+      </div>
+      <div class="cat-card reveal">
+        <div class="cat-icon">🔥</div>
+        <div class="cat-name">Firebase</div>
+        <div class="cat-count">18 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:35%"></div></div>
+      </div>
+      <div class="cat-card reveal reveal-delay-1">
+        <div class="cat-icon">🧮</div>
+        <div class="cat-name">Algorithm</div>
+        <div class="cat-count">15 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:30%"></div></div>
+      </div>
+      <div class="cat-card reveal reveal-delay-2">
+        <div class="cat-icon">🐙</div>
+        <div class="cat-name">Git / DevOps</div>
+        <div class="cat-count">12 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:25%"></div></div>
+      </div>
+      <div class="cat-card reveal reveal-delay-3">
+        <div class="cat-icon">🌐</div>
+        <div class="cat-name">API / REST</div>
+        <div class="cat-count">9 tài liệu</div>
+        <div class="cat-bar"><div class="cat-bar-fill" style="width:18%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURED DOCS ── -->
+<section class="featured" id="docs">
+  <div class="container">
+    <div class="section-label reveal">Nổi bật</div>
+    <div class="section-title reveal reveal-delay-1">Tài liệu <em>được xem nhiều</em></div>
+    <p class="section-desc reveal reveal-delay-2">Được cộng đồng đánh giá cao và liên tục cập nhật.</p>
+
+    <div class="docs-grid">
+      <div class="doc-card hot reveal">
+        <div class="doc-card-top">
+          <span class="doc-lang">JavaScript</span>
+          <span class="doc-demo-badge">▶ Live Demo</span>
+        </div>
+        <div class="doc-title">Debounce & Throttle — tối ưu hiệu suất sự kiện</div>
+        <p class="doc-desc">Giải thích sâu cơ chế hoạt động, so sánh trực quan và snippet copy-paste sẵn sàng dùng trong production.</p>
+        <div class="doc-footer">
+          <div class="doc-meta">
+            <span>👁 1.2k</span>
+            <span>🔥 Hot</span>
+          </div>
+          <div class="doc-tags"><span class="tag">perf</span><span class="tag">event</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card reveal reveal-delay-1">
+        <div class="doc-card-top">
+          <span class="doc-lang">React</span>
+          <span class="doc-demo-badge">▶ Live Demo</span>
+        </div>
+        <div class="doc-title">useReducer + useContext — quản lý state toàn cục</div>
+        <p class="doc-desc">Thay thế Redux nhẹ nhàng cho dự án tầm trung. Bao gồm pattern, ví dụ thực tế và so sánh với Zustand.</p>
+        <div class="doc-footer">
+          <div class="doc-meta"><span>👁 987</span><span>⭐ 4.9</span></div>
+          <div class="doc-tags"><span class="tag">hooks</span><span class="tag">state</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card reveal reveal-delay-2">
+        <div class="doc-card-top">
+          <span class="doc-lang">CSS</span>
+        </div>
+        <div class="doc-title">CSS Grid Mastery — layout từ cơ bản đến nâng cao</div>
+        <p class="doc-desc">Cheatsheet đầy đủ, playground tương tác và các pattern layout phổ biến trong thực tế.</p>
+        <div class="doc-footer">
+          <div class="doc-meta"><span>👁 854</span><span>⭐ 4.8</span></div>
+          <div class="doc-tags"><span class="tag">layout</span><span class="tag">grid</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card reveal">
+        <div class="doc-card-top">
+          <span class="doc-lang">Node.js</span>
+          <span class="doc-demo-badge">▶ Live Demo</span>
+        </div>
+        <div class="doc-title">Express.js REST API từ A–Z với authentication</div>
+        <p class="doc-desc">Xây dựng API hoàn chỉnh với JWT, middleware, rate limiting và error handling chuẩn production.</p>
+        <div class="doc-footer">
+          <div class="doc-meta"><span>👁 743</span><span>⭐ 4.7</span></div>
+          <div class="doc-tags"><span class="tag">api</span><span class="tag">auth</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card reveal reveal-delay-1">
+        <div class="doc-card-top">
+          <span class="doc-lang">Firebase</span>
+        </div>
+        <div class="doc-title">Firestore Real-time Database — patterns & best practices</div>
+        <p class="doc-desc">Cấu trúc dữ liệu, truy vấn hiệu quả, security rules và tối ưu chi phí cho ứng dụng production.</p>
+        <div class="doc-footer">
+          <div class="doc-meta"><span>👁 621</span><span>⭐ 4.8</span></div>
+          <div class="doc-tags"><span class="tag">db</span><span class="tag">realtime</span></div>
+        </div>
+      </div>
+
+      <div class="doc-card hot reveal reveal-delay-2">
+        <div class="doc-card-top">
+          <span class="doc-lang" style="color:var(--accent2);border-color:rgba(0,229,255,.3)">GSAP</span>
+          <span class="doc-demo-badge">▶ Live Demo</span>
+        </div>
+        <div class="doc-title">GSAP ScrollTrigger — hiệu ứng cuộn mượt mà</div>
+        <p class="doc-desc">Từ pin sections, parallax, đến reveal animations. Code mẫu đầy đủ và tương thích mọi framework.</p>
+        <div class="doc-footer">
+          <div class="doc-meta"><span>👁 589</span><span>🆕 Mới</span></div>
+          <div class="doc-tags"><span class="tag">animation</span><span class="tag">scroll</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-label reveal">Cách hoạt động</div>
+    <div class="section-title reveal reveal-delay-1">Đơn giản như <em>copy-paste</em></div>
+    <p class="section-desc reveal reveal-delay-2">Bốn bước để tìm được chính xác thứ bạn cần.</p>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-icon">🔍</div>
+        <div class="step-title">Tìm kiếm</div>
+        <p class="step-desc">Gõ từ khóa hoặc browse theo tag để định vị tài liệu bạn cần trong vài giây.</p>
+      </div>
+      <div class="step reveal reveal-delay-1">
+        <div class="step-num">02</div>
+        <div class="step-icon">📖</div>
+        <div class="step-title">Đọc & hiểu</div>
+        <p class="step-desc">Nội dung được viết rõ ràng, kèm ví dụ thực tế và giải thích từng dòng code.</p>
+      </div>
+      <div class="step reveal reveal-delay-2">
+        <div class="step-num">03</div>
+        <div class="step-icon">▶</div>
+        <div class="step-title">Chạy Demo</div>
+        <p class="step-desc">Thử nghiệm trực tiếp trong trình duyệt không cần cài đặt. Sửa code và xem kết quả tức thì.</p>
+      </div>
+      <div class="step reveal reveal-delay-3">
+        <div class="step-num">04</div>
+        <div class="step-icon">⚡</div>
+        <div class="step-title">Áp dụng</div>
+        <p class="step-desc">Copy snippet vào project của bạn. Đã được test và tối ưu cho production.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+<section style="background:var(--bg2);padding:3rem clamp(1.2rem,5vw,4rem)">
+  <div class="container">
+    <div class="stats-banner reveal">
+      <div class="stat-item"><strong>500+</strong><span>Tài liệu kỹ thuật</span></div>
+      <div class="stat-item"><strong>50+</strong><span>Tags phân loại</span></div>
+      <div class="stat-item"><strong>120+</strong><span>Live Demo</span></div>
+      <div class="stat-item"><strong>99.9%</strong><span>Uptime hệ thống</span></div>
+      <div class="stat-item"><strong>24/7</strong><span>Cập nhật liên tục</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TIMELINE ── -->
+<section class="timeline-section" id="about">
+  <div class="container">
+    <div class="section-label reveal">Hành trình</div>
+    <div class="section-title reveal reveal-delay-1">My <em>Coding Odyssey</em></div>
+    <p class="section-desc reveal reveal-delay-2">Từ những dòng Pascal đầu tiên đến hệ sinh thái mã nguồn mở.</p>
+
+    <div class="timeline">
+      <div class="tl-item reveal">
+        <div class="tl-year">2018</div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-role">Học sinh</div>
+          <div class="tl-title">Bắt đầu bén duyên với code</div>
+          <p class="tl-desc">Tiếp cận Pascal và những dòng "Hello World" đầu tiên tại phòng máy trường cấp 3. Cảm giác máy tính làm đúng ý mình là điều kỳ diệu.</p>
+          <div class="tl-techs"><span class="tl-tech">Pascal</span><span class="tl-tech">Algorithm</span></div>
+        </div>
+      </div>
+      <div class="tl-item reveal reveal-delay-1">
+        <div class="tl-year">2021</div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-role">Sinh viên</div>
+          <div class="tl-title">Đại học & khám phá Web</div>
+          <p class="tl-desc">Xây dựng website cá nhân đầu tiên. Khám phá sức mạnh của HTML, CSS và JavaScript qua hàng trăm giờ tự học.</p>
+          <div class="tl-techs"><span class="tl-tech">HTML5</span><span class="tl-tech">CSS3</span><span class="tl-tech">JavaScript</span></div>
+        </div>
+      </div>
+      <div class="tl-item reveal reveal-delay-2">
+        <div class="tl-year">2024</div>
+        <div class="tl-dot"></div>
+        <div class="tl-content">
+          <div class="tl-role">Internship</div>
+          <div class="tl-title">Va chạm thực tế</div>
+          <p class="tl-desc">Gia nhập đội ngũ phát triển tại doanh nghiệp. Làm quen với Git, quy trình Agile, code review và làm việc nhóm chuyên nghiệp.</p>
+          <div class="tl-techs"><span class="tl-tech">React</span><span class="tl-tech">Git</span><span class="tl-tech">Firebase</span><span class="tl-tech">Agile</span></div>
+        </div>
+      </div>
+      <div class="tl-item reveal reveal-delay-3">
+        <div class="tl-year">2026</div>
+        <div class="tl-dot active"></div>
+        <div class="tl-content">
+          <div class="tl-role">Software Engineer · Hiện tại</div>
+          <div class="tl-title">Xây dựng DocVault</div>
+          <p class="tl-desc">Tập trung phát triển DocVault và các hệ sinh thái mã nguồn mở sáng tạo. Chia sẻ kiến thức với cộng đồng lập trình Việt Nam.</p>
+          <div class="tl-techs"><span class="tl-tech">GSAP</span><span class="tl-tech">Node.js</span><span class="tl-tech">Fullstack</span><span class="tl-tech">Open Source</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="section-label reveal">Tính năng</div>
+    <div class="section-title reveal reveal-delay-1">Được thiết kế cho <em>developers</em></div>
+
+    <div class="feat-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon-wrap purple">🚀</div>
+        <div class="feat-title">Tốc độ tối ưu</div>
+        <p class="feat-desc">Truy xuất dữ liệu tức thì với Firebase Realtime Database. Tìm kiếm full-text nhanh chóng, không delay.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1">
+        <div class="feat-icon-wrap cyan">▶</div>
+        <div class="feat-title">Live Demo tích hợp</div>
+        <p class="feat-desc">Chạy code trực tiếp trong trình duyệt, chỉnh sửa và thấy kết quả ngay lập tức. Không cần IDE.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <div class="feat-icon-wrap pink">🏷️</div>
+        <div class="feat-title">Tag system thông minh</div>
+        <p class="feat-desc">Hệ thống phân loại linh hoạt với multi-tag, giúp tìm đúng tài liệu trong hàng trăm mục.</p>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon-wrap green">🛡️</div>
+        <div class="feat-title">Bảo mật & phân quyền</div>
+        <p class="feat-desc">Firebase Security Rules đảm bảo chỉ admin mới có quyền thêm/sửa tài liệu. Dữ liệu luôn an toàn.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-1">
+        <div class="feat-icon-wrap purple">📱</div>
+        <div class="feat-title">Responsive hoàn toàn</div>
+        <p class="feat-desc">Giao diện tối ưu cho mọi thiết bị từ điện thoại đến desktop. Đọc tài liệu mọi lúc, mọi nơi.</p>
+      </div>
+      <div class="feat-card reveal reveal-delay-2">
+        <div class="feat-icon-wrap cyan">🌙</div>
+        <div class="feat-title">Dark mode thuần túy</div>
+        <p class="feat-desc">Giao diện tối tối ưu cho developer. Giảm mỏi mắt khi đọc code trong môi trường có ánh sáng thấp.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section">
+  <div class="cta-box reveal">
+    <h2>Không bỏ lỡ tài liệu mới</h2>
+    <p>Nhận thông báo khi có snippet, hướng dẫn hoặc demo mới được thêm vào DocVault.</p>
+    <div class="email-form">
+      <input class="email-input" type="email" placeholder="your@email.com" />
+      <button class="btn btn-primary" style="white-space:nowrap">Đăng ký →</button>
+    </div>
+    <p style="font-size:.75rem;color:var(--dim);margin-top:1rem;font-family:var(--mono)">Không spam. Unsubscribe bất cứ lúc nào.</p>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="nav-logo" style="font-size:1.1rem">⚡ Doc<span style="color:var(--accent)">Vault</span></div>
+      <p>Hệ sinh thái tài liệu mã nguồn mở dành cho lập trình viên Việt Nam. Được xây dựng với ❤️ bởi Dương SPM.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Khám phá</h4>
+      <a href="#docs">Tài liệu mới</a>
+      <a href="#categories">Danh mục</a>
+      <a href="#docs">Có Live Demo</a>
+      <a href="#">Top voted</a>
+    </div>
+    <div class="footer-col">
+      <h4>Hỗ trợ</h4>
+      <a href="#">Hướng dẫn sử dụng</a>
+      <a href="#">Báo lỗi</a>
+      <a href="#">Điều khoản</a>
+      <a href="#">Chính sách bảo mật</a>
+    </div>
+    <div class="footer-col">
+      <h4>Liên kết</h4>
+      <a href="https://github.com/duongspm" target="_blank">GitHub ↗</a>
+      <a href="https://duongspm.github.io/document/admin.html">Admin Panel ↗</a>
+      <a href="#">RSS Feed</a>
+      <a href="#">Sitemap</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 DocVault · Thiết kế & phát triển bởi Dương SPM · MIT License</p>
+    <div class="footer-socials">
+      <a href="https://github.com/duongspm" class="social-btn" target="_blank" title="GitHub">GH</a>
+      <a href="#" class="social-btn" title="Twitter/X">𝕏</a>
+      <a href="#" class="social-btn" title="Facebook">fb</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ── COUNTER ANIMATION ──
+  function animateCounter(el, target, suffix = '') {
+    let start = 0;
+    const duration = 1600;
+    const step = timestamp => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const val = Math.floor(progress * target);
+      el.textContent = val + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  // ── SCROLL REVEAL ──
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+
+  // ── STATS COUNTER (trigger once visible) ──
+  const statsEl = document.querySelector('.hero-stats');
+  let counted = false;
+  const statsObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting && !counted) {
+      counted = true;
+      animateCounter(document.getElementById('stat1'), 500, '+');
+      animateCounter(document.getElementById('stat2'), 50, '+');
+      animateCounter(document.getElementById('stat3'), 120, '+');
+    }
+  }, { threshold: 0.5 });
+  if (statsEl) statsObs.observe(statsEl);
+
+  // ── SEARCH TAG CLICK ──
+  document.querySelectorAll('.search-tag').forEach(tag => {
+    tag.addEventListener('click', function() {
+      document.querySelector('.search-input').value = this.textContent;
+      document.querySelector('.search-input').focus();
+    });
+  });
+
+  // ── SMOOTH NAV ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ── NAV SCROLL EFFECT ──
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    nav.style.background = window.scrollY > 50
+      ? 'rgba(8,8,16,0.95)'
+      : 'rgba(8,8,16,0.75)';
+  });
+</script>
+</body>
+</html>
