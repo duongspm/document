@@ -1493,6 +1493,25 @@ body {
   margin-top: 10px;
 }
 
+/* Sub-reply (reply comment) - Facebook/Instagram style */
+.comment-item.sub-reply {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.04) 0%, rgba(108, 92, 231, 0.02) 100%);
+  border: 1px solid rgba(108, 92, 231, 0.1);
+  border-left: 4px solid var(--acc1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 10px;
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+  transition: all 0.2s ease;
+}
+
+.comment-item.sub-reply:hover {
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.08) 0%, rgba(108, 92, 231, 0.04) 100%);
+  border-color: rgba(108, 92, 231, 0.2);
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.1);
+}
+
 .reply-form {
   margin-top: 8px;
   margin-left: 36px;
